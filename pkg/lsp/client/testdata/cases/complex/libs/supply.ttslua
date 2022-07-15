@@ -1,0 +1,9 @@
+supply = {
+    pearl = || getObjectFromGUID("2d5039"),
+    gold  = || getObjectFromGUID("f9db70"),
+    death = || getObjectFromGUID("08759f"),
+    life  = || getObjectFromGUID("dda0ed"),
+    calm  = || getObjectFromGUID("fdfd7b"),
+    elan  = || getObjectFromGUID("b819b0"),
+}
+

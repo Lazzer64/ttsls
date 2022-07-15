@@ -1,0 +1,237 @@
+#include artifact
+#include player
+
+cards = {}
+-- Magic Items
+cards["Calm & Elan"] = { collect = {{ calm = 1 }, { elan = 1 }} }
+cards["Death & Life"] = { collect = {{ death = 1 }, { life = 1 }} }
+
+-- Mages
+cards["Diviner"]      = { collect = {{ elan = 1 }} }
+cards["Dragon Tamer"] = { collect = {{ elan = 1 }} }
+cards["Druid"]        = { collect = {{ life = 1 }} }
+cards["Duelist"]      = { collect = {{ elan = 1 }} }
+cards["Healer"]       = { collect = {{ calm = 1 }, { life = 1 }} }
+cards["Illusionist"]  = { collect = {{ gold = 1 }, { elan = 1}, { calm = 1 }, { life = 1}, { death = 1 }} }
+cards["Necromancer"]  = { collect = {{ death = 1 }} }
+cards["Seer"]         = { collect = {{ calm = 1 }} }
+cards["Witch"]        = { collect = {{ life = 1 }, { death = 1 }} }
+
+-- Artifacts
+cards["Ancient Dragon"]         = { vp = || 1 }
+cards["Bone Dragon"]            = { vp = || 1 }
+cards["Celestial Horse"]        = { collect = {{ elan = 1 }, { calm = 1 }, { life = 1}} }
+cards["Chalice of Fire"]        = { collect = {{ elan = 2 }} }
+cards["Chalice of Life"]        = { collect = {{ calm = 1, life = 1 }} }
+cards["Conch Battle Horn"]      = { collect = {{ death = 1, elan = 1}} }
+cards["Corrupt Altar"]          = { collect = {{ life = 1, death = 1 }} }
+cards["Dancing Sword"]          = { collect = {{ death = 1, elan = 1 }} }
+cards["Diving Cord"]            = { collect = {{ life = 1 }} }
+cards["Dolphin"]                = { collect = {{ pearl = 1 }} }
+cards["Dragon Bridle"]          = { vp = || 1 }
+cards["Dragon Egg"]             = { vp = || 1 }
+cards["Earth Dragon"]           = { vp = || 1 }
+cards["Elemental Spring"]       = { collect = {{ calm = 1, life = 1, elan = 1 }} }
+cards["Endless Knot"]           = { collect = {{ gold = 1 }, { elan = 1}, { calm = 1 }, { life = 1}, { death = 1 }} }
+cards["Fire Demon"]             = { collect = {{ elan = 1 }} }
+cards["Fire Dragon"]            = { vp = || 1 }
+cards["Flaming Pit"]            = { collect = {{ elan = 1 }} }
+cards["Fountain of Youth"]      = { collect = {{ life = 1 }} }
+cards["Ghost Ship"]             = { collect = {{ calm = 1 }} }
+cards["Golden Lion"]            = { collect = {{ calm = 1, life = 1, elan = 1 }}, vp = || 1 }
+cards["Hawk"]                   = { collect = {{ calm = 1 }} }
+cards["Hound of Death"]         = { collect = {{ death = 2 }} }
+cards["Hypnotic Basin"]         = { collect = {{ calm = 2 }} }
+cards["Infernal Engine"]        = { collect = {{ elan = 1 }} }
+cards["Jeweled Statuette"]      = { vp = || 1 }
+cards["Lodestone"]              = { collect = {{ calm = 1 }} }
+cards["Mermaid"]                = { collect = {{ calm = 1 }} }
+cards["Nightingale"]            = { vp = || 1 }
+cards["Philosopher's Stone"]    = { vp = || 1 }
+cards["Possessed Demon Slayer"] = { vp = || 1 }
+cards["Prismatic Dragon"]       = { collect = {{ elan = 1 }, { calm = 1 }, { life = 1}}, vp = || 1 }
+cards["Raven Familiar"]         = { collect = {{ death = 1 }} }
+cards["Ring of Midas"]          = { vp = || 1 }
+cards["Sea Serpent"]            = { vp = || 1 }
+cards["Shadowy Figure"]         = { collect = {{ calm = 1 }} }
+cards["Treant"]                 = { collect = {{ life = 2 }} }
+cards["Trident"]                = { collect = {{ life = 1 }, { calm = 1 }} }
+cards["Vortex of Destruction"]  = { collect = {{ death = 1, elan = 1 }} }
+cards["Water Dragon"]           = { vp = || 1 }
+cards["Wind Dragon"]            = { vp = || 1 }
+
+-- Monuments
+cards["Alchemical Lab"]   = { vp = || 1 }
+cards["Colossus"]         = { vp = || 2 }
+cards["Dark Cathedral"]   = { collect = {{ death = 1 }}, vp = function(card, playmat)
+    if artifact.untapped(card) and player.essence(playmat)["Gold"] >= 3 then
+        for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) and artifact.inPlayArea(colliding) do
+            if colliding.hasTag("card") and colliding.hasTag("demon") and artifact.untapped(colliding) then
+                return 3
+            end
+        end
+    end
+    return 2
+end }
+cards["Demon Workshop"]   = { collect = {{ elan = 1 }, { death = 1 }}, vp = || 1 }
+cards["Golden Statue"]    = { vp = function(card, playmat)
+    if artifact.untapped(card) and player.essence(playmat)["Gold"] >= 3 then
+        return 4
+    end
+    return 1
+end }
+cards["Great Pyramid"]    = { vp = || 3 }
+cards["Great Wall"]       = { collect = {{ elan = 1 }}, vp = || 2 }
+cards["Hanging Gardens"]  = { collect = {{ elan = 1}, { calm = 1 }, { life = 1}, { death = 1 }}, vp = || 1 }
+cards["Hidden Hall"]      = { vp = |card| 1 + artifact.countEssence(card)["Gold"] }
+cards["Library"]          = { vp = || 1 }
+cards["Mausoleum"]        = { vp = || 2 }
+cards["Obelisk"]          = { vp = || 1 }
+cards["Oracle"]           = { vp = || 2 }
+cards["Solomon's Mine"]   = { vp = || 1 }
+cards["Solomon's Temple"] = { vp = || 2 }
+cards["Temple"]           = { collect = {{ life = 1 }}, vp = || 2 }
+cards["Underwater Alter"] = { vp = || 1 }
+cards["Warrior's Hall"]   = { collect = {{ elan = 1 }}, vp = || 2 }
+
+-- Places of Power
+cards["Blood Isle / Pearl Bed"] = {
+    collect = {{ pearl = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Blood Isle
+            return artifact.countEssence(card)["Elan"]
+        else
+            -- Pearl Bed
+            return 2 * artifact.countEssence(card)["Pearl"]
+        end
+    end
+}
+
+cards["Catacombs of the Dead / Sacrificial Pit"] = {
+    collect = {{ death = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Sacrificial Pit
+            return 2 + artifact.countEssence(card)["Death"]
+        else
+            -- Catacombs of the Dead
+            return artifact.countEssence(card)["Death"]
+        end
+    end
+}
+
+cards["Coral Castle / Sunkeen Reef"] = {
+    collect = {{ gold = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Coral Castle
+            return 3
+        else
+            -- Sunken Reef
+            return artifact.countEssence(card)["Calm"]
+        end
+    end
+}
+
+cards["Cursed Forge / Dwarvern Mines"] = {
+    collect = {{ gold = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Dwarven Mines
+            return artifact.countEssence(card)["Gold"]
+        else
+            -- Cursed Forge
+            return 1 + artifact.countEssence(card)["Gold"]
+        end
+    end
+}
+
+cards["Dragon Aerie / Crystal Keep"] = {
+    collect = {{ gold = 1 }},
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Crystal Keep
+            local artifacts = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("artifact") and artifact.inPlayArea(colliding) then
+                    artifacts = artifacts + 1
+                end
+            end
+            return 5 + math.floor(artifacts / 2)
+        else
+            -- Dragon Aerie
+            return artifact.countEssence(card)["Life"]
+        end
+    end
+}
+
+cards["Dragon's Lair / Sorcerer's Bestiary"] = {
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Dragon's Lair
+            return artifact.countEssence(card)["Gold"]
+        else
+            -- Sorcerer's Bestiary
+            local total = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("card") and artifact.inPlayArea(colliding) then
+                    if colliding.hasTag("beast") then total = total + 1 end
+                    if colliding.hasTag("dragon") then total = total + 2 end
+                end
+            end
+            return total
+        end
+    end
+}
+
+cards["Mystical Menagerie / Alchemical Workshop"] = {
+    collect = {{ elan = 1 }, { calm = 1 }, { life = 1}, { death = 1 }},
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Mystical Menagerie
+            local beasts = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("card") and colliding.hasTag("beast") and artifact.inPlayArea(colliding) then
+                    beasts = beasts + 1
+                end
+            end
+            return beasts + artifact.countEssence(card)["Calm"]
+        else
+            -- Alchemical Workshop
+            return 2
+        end
+    end
+}
+
+cards["Sacred Grove / Alchemist Tower"] = {
+    collect = {{ elan = 1 }, { calm = 1 }, { life = 1}, { death = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Sacred Grove
+            return 2 + artifact.countEssence(card)["Life"]
+        else
+            -- Alchemist's Tower
+            return artifact.countEssence(card)["Gold"]
+        end
+    end
+}
+
+cards["Temple of the Abyss / Gate of Hell"] = {
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Gate of Hell
+            local demons = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("card") and colliding.hasTag("demon") and artifact.inPlayArea(colliding) then
+                    demons = demons + 1
+                end
+            end
+            return demons + artifact.countEssence(card)["Death"]
+        else
+            -- Temple of the Abyss
+            return artifact.countEssence(card)["Calm"]
+        end
+    end
+}
+

@@ -1,0 +1,832 @@
+----#include libs/playmat
+----#include cards
+----#include artifact
+----#include color
+color = {
+    ERROR = {r=1,   g=0.3, b=0.3 },
+    CALM  = {r=0.5, g=0.5, b=1   },
+    ELAN  = {r=1,   g=0.5, b=0.5 },
+    DEATH = {r=0.5, g=0.5, b=0.5 },
+    LIFE  = {r=0.5, g=1,   b=0.5 },
+    GOLD  = {r=1,   g=1,   b=0.5 },
+    PEARL = {r=1,   g=1,   b=1   },
+}
+
+----#include color
+----#include supply
+supply = {
+    pearl = || getObjectFromGUID("2d5039"),
+    gold  = || getObjectFromGUID("f9db70"),
+    death = || getObjectFromGUID("08759f"),
+    life  = || getObjectFromGUID("dda0ed"),
+    calm  = || getObjectFromGUID("fdfd7b"),
+    elan  = || getObjectFromGUID("b819b0"),
+}
+
+----#include supply
+
+artifact = {}
+
+artifact.untap = function(target)
+    target.setRotationSmooth({x=0, y=180, z=0})
+end
+
+artifact.tap = function(target)
+    target.setRotationSmooth({x=0, y=270, z=0})
+end
+
+artifact.tapped = function(target)
+    local y = target.getRotation().y 
+    return y > 181 and y < 359
+end
+
+artifact.untapped = function(target)
+    return not artifact.tapped(target)
+end
+
+artifact.flipped = function(target)
+    local rot = target.getRotation().z
+    return rot > 90 and rot < 270
+end
+
+artifact.tapAbility = function(target, callback)
+    return function(playerColor)
+        if artifact.untapped(target) then
+            callback(playerColor)
+            artifact.tap(target)
+        else
+            broadcastToColor("Cannot use this ability while tapped!", playerColor, color.ERROR)
+        end
+    end
+end
+
+artifact.placePosition = function(target)
+    local pos = target.getPosition()
+    return {x=pos.x, y=pos.y + 1, z=pos.z}
+end
+
+artifact.getCollidingObjects = function(target)
+    local bounds = target.getBounds()
+    local colliding = Physics.cast({
+        type = 3,
+        origin = bounds.center,
+        direction = {0, 1, 0},
+        size = {x = bounds.size.x, y = bounds.size.y, z = bounds.size.z},
+    })
+
+    function inHand(obj)
+        return obj.getPosition().y > 2
+    end
+
+    local objects = {}
+    for _, val in ipairs(colliding) do
+        if not inHand(val.hit_object) then
+            objects[#objects+1] = val.hit_object
+        end
+    end
+    return objects
+end
+
+artifact.inPlayArea = function(target)
+    return target.getPosition().z < -6.74 
+end
+
+artifact.countEssence = function(target)
+    local counts = {Pearl = 0, Gold = 0, Death = 0, Life = 0, Calm = 0, Elan = 0}
+    for _, colliding in ipairs(artifact.getCollidingObjects(target)) do
+        if colliding.hasTag("essence") then
+            local quantity = colliding.getQuantity()
+            if quantity < 1 then quantity = 1 end
+            counts[colliding.getName()] = counts[colliding.getName()] + quantity
+        end
+    end
+    return counts
+end
+
+artifact.addTakeEssence = function(target, callback)
+    target.addContextMenuItem("Take Essence", function(playerColor)
+        for _, obj in ipairs(artifact.getCollidingObjects(target)) do
+            if obj.hasTag("essence") then
+                obj.destroy() -- TODO
+                if callback != nil then
+                    callback()
+                end
+            end
+        end
+    end)
+end
+
+artifact.addTap = function(target)
+    target.addContextMenuItem("Tap", function(playerColor)
+        artifact.tap(target)
+    end)
+
+    target.addContextMenuItem("Un-tap", function(playerColor)
+        artifact.untap(target)
+    end)
+end
+
+artifact.addCollect = function(target, collect)
+    local multiCollect = #collect > 1
+
+    for _, essences in ipairs(collect) do
+        local title = "Collect"
+        for essence, amnt in pairs(essences) do
+            title = title .. " " .. math.max(amnt, 1) .. " " .. essence:sub(1, 1):upper()..essence:sub(2)
+        end
+
+        target.addContextMenuItem(title, function(playerColor)
+            for essence, amnt in pairs(essences) do
+                for i = 1, math.max(amnt, 1) do
+                    supply[essence]().takeObject({position = artifact.placePosition(target)})
+                end
+            end
+        end, multiCollect)
+    end
+end
+
+----#include artifact
+----#include player
+----#include artifact
+----#include color
+color = {
+    ERROR = {r=1,   g=0.3, b=0.3 },
+    CALM  = {r=0.5, g=0.5, b=1   },
+    ELAN  = {r=1,   g=0.5, b=0.5 },
+    DEATH = {r=0.5, g=0.5, b=0.5 },
+    LIFE  = {r=0.5, g=1,   b=0.5 },
+    GOLD  = {r=1,   g=1,   b=0.5 },
+    PEARL = {r=1,   g=1,   b=1   },
+}
+
+----#include color
+----#include supply
+supply = {
+    pearl = || getObjectFromGUID("2d5039"),
+    gold  = || getObjectFromGUID("f9db70"),
+    death = || getObjectFromGUID("08759f"),
+    life  = || getObjectFromGUID("dda0ed"),
+    calm  = || getObjectFromGUID("fdfd7b"),
+    elan  = || getObjectFromGUID("b819b0"),
+}
+
+----#include supply
+
+artifact = {}
+
+artifact.untap = function(target)
+    target.setRotationSmooth({x=0, y=180, z=0})
+end
+
+artifact.tap = function(target)
+    target.setRotationSmooth({x=0, y=270, z=0})
+end
+
+artifact.tapped = function(target)
+    local y = target.getRotation().y 
+    return y > 181 and y < 359
+end
+
+artifact.untapped = function(target)
+    return not artifact.tapped(target)
+end
+
+artifact.flipped = function(target)
+    local rot = target.getRotation().z
+    return rot > 90 and rot < 270
+end
+
+artifact.tapAbility = function(target, callback)
+    return function(playerColor)
+        if artifact.untapped(target) then
+            callback(playerColor)
+            artifact.tap(target)
+        else
+            broadcastToColor("Cannot use this ability while tapped!", playerColor, color.ERROR)
+        end
+    end
+end
+
+artifact.placePosition = function(target)
+    local pos = target.getPosition()
+    return {x=pos.x, y=pos.y + 1, z=pos.z}
+end
+
+artifact.getCollidingObjects = function(target)
+    local bounds = target.getBounds()
+    local colliding = Physics.cast({
+        type = 3,
+        origin = bounds.center,
+        direction = {0, 1, 0},
+        size = {x = bounds.size.x, y = bounds.size.y, z = bounds.size.z},
+    })
+
+    function inHand(obj)
+        return obj.getPosition().y > 2
+    end
+
+    local objects = {}
+    for _, val in ipairs(colliding) do
+        if not inHand(val.hit_object) then
+            objects[#objects+1] = val.hit_object
+        end
+    end
+    return objects
+end
+
+artifact.inPlayArea = function(target)
+    return target.getPosition().z < -6.74 
+end
+
+artifact.countEssence = function(target)
+    local counts = {Pearl = 0, Gold = 0, Death = 0, Life = 0, Calm = 0, Elan = 0}
+    for _, colliding in ipairs(artifact.getCollidingObjects(target)) do
+        if colliding.hasTag("essence") then
+            local quantity = colliding.getQuantity()
+            if quantity < 1 then quantity = 1 end
+            counts[colliding.getName()] = counts[colliding.getName()] + quantity
+        end
+    end
+    return counts
+end
+
+artifact.addTakeEssence = function(target, callback)
+    target.addContextMenuItem("Take Essence", function(playerColor)
+        for _, obj in ipairs(artifact.getCollidingObjects(target)) do
+            if obj.hasTag("essence") then
+                obj.destroy() -- TODO
+                if callback != nil then
+                    callback()
+                end
+            end
+        end
+    end)
+end
+
+artifact.addTap = function(target)
+    target.addContextMenuItem("Tap", function(playerColor)
+        artifact.tap(target)
+    end)
+
+    target.addContextMenuItem("Un-tap", function(playerColor)
+        artifact.untap(target)
+    end)
+end
+
+artifact.addCollect = function(target, collect)
+    local multiCollect = #collect > 1
+
+    for _, essences in ipairs(collect) do
+        local title = "Collect"
+        for essence, amnt in pairs(essences) do
+            title = title .. " " .. math.max(amnt, 1) .. " " .. essence:sub(1, 1):upper()..essence:sub(2)
+        end
+
+        target.addContextMenuItem(title, function(playerColor)
+            for essence, amnt in pairs(essences) do
+                for i = 1, math.max(amnt, 1) do
+                    supply[essence]().takeObject({position = artifact.placePosition(target)})
+                end
+            end
+        end, multiCollect)
+    end
+end
+
+----#include artifact
+
+player = {}
+
+player.essence = function(playmat)
+    local essence = artifact.countEssence(playmat)
+    for _, obj in ipairs(artifact.getCollidingObjects(playmat)) do
+        if obj.hasTag("card") then
+            local cardEssence = artifact.countEssence(obj)
+            essence = {
+                Pearl = essence.Pearl - cardEssence.Pearl,
+                Gold = essence.Gold - cardEssence.Gold,
+                Death = essence.Death - cardEssence.Death,
+                Life = essence.Life - cardEssence.Life,
+                Calm = essence.Calm - cardEssence.Calm,
+                Elan = essence.Elan - cardEssence.Elan,
+            }
+        end
+    end
+    return essence
+end
+
+----#include player
+
+cards = {}
+-- Magic Items
+cards["Calm & Elan"] = { collect = {{ calm = 1 }, { elan = 1 }} }
+cards["Death & Life"] = { collect = {{ death = 1 }, { life = 1 }} }
+
+-- Mages
+cards["Diviner"]      = { collect = {{ elan = 1 }} }
+cards["Dragon Tamer"] = { collect = {{ elan = 1 }} }
+cards["Druid"]        = { collect = {{ life = 1 }} }
+cards["Duelist"]      = { collect = {{ elan = 1 }} }
+cards["Healer"]       = { collect = {{ calm = 1 }, { life = 1 }} }
+cards["Illusionist"]  = { collect = {{ gold = 1 }, { elan = 1}, { calm = 1 }, { life = 1}, { death = 1 }} }
+cards["Necromancer"]  = { collect = {{ death = 1 }} }
+cards["Seer"]         = { collect = {{ calm = 1 }} }
+cards["Witch"]        = { collect = {{ life = 1 }, { death = 1 }} }
+
+-- Artifacts
+cards["Ancient Dragon"]         = { vp = || 1 }
+cards["Bone Dragon"]            = { vp = || 1 }
+cards["Celestial Horse"]        = { collect = {{ elan = 1 }, { calm = 1 }, { life = 1}} }
+cards["Chalice of Fire"]        = { collect = {{ elan = 2 }} }
+cards["Chalice of Life"]        = { collect = {{ calm = 1, life = 1 }} }
+cards["Conch Battle Horn"]      = { collect = {{ death = 1, elan = 1}} }
+cards["Corrupt Altar"]          = { collect = {{ life = 1, death = 1 }} }
+cards["Dancing Sword"]          = { collect = {{ death = 1, elan = 1 }} }
+cards["Diving Cord"]            = { collect = {{ life = 1 }} }
+cards["Dolphin"]                = { collect = {{ pearl = 1 }} }
+cards["Dragon Bridle"]          = { vp = || 1 }
+cards["Dragon Egg"]             = { vp = || 1 }
+cards["Earth Dragon"]           = { vp = || 1 }
+cards["Elemental Spring"]       = { collect = {{ calm = 1, life = 1, elan = 1 }} }
+cards["Endless Knot"]           = { collect = {{ gold = 1 }, { elan = 1}, { calm = 1 }, { life = 1}, { death = 1 }} }
+cards["Fire Demon"]             = { collect = {{ elan = 1 }} }
+cards["Fire Dragon"]            = { vp = || 1 }
+cards["Flaming Pit"]            = { collect = {{ elan = 1 }} }
+cards["Fountain of Youth"]      = { collect = {{ life = 1 }} }
+cards["Ghost Ship"]             = { collect = {{ calm = 1 }} }
+cards["Golden Lion"]            = { collect = {{ calm = 1, life = 1, elan = 1 }}, vp = || 1 }
+cards["Hawk"]                   = { collect = {{ calm = 1 }} }
+cards["Hound of Death"]         = { collect = {{ death = 2 }} }
+cards["Hypnotic Basin"]         = { collect = {{ calm = 2 }} }
+cards["Infernal Engine"]        = { collect = {{ elan = 1 }} }
+cards["Jeweled Statuette"]      = { vp = || 1 }
+cards["Lodestone"]              = { collect = {{ calm = 1 }} }
+cards["Mermaid"]                = { collect = {{ calm = 1 }} }
+cards["Nightingale"]            = { vp = || 1 }
+cards["Philosopher's Stone"]    = { vp = || 1 }
+cards["Possessed Demon Slayer"] = { vp = || 1 }
+cards["Prismatic Dragon"]       = { collect = {{ elan = 1 }, { calm = 1 }, { life = 1}}, vp = || 1 }
+cards["Raven Familiar"]         = { collect = {{ death = 1 }} }
+cards["Ring of Midas"]          = { vp = || 1 }
+cards["Sea Serpent"]            = { vp = || 1 }
+cards["Shadowy Figure"]         = { collect = {{ calm = 1 }} }
+cards["Treant"]                 = { collect = {{ life = 2 }} }
+cards["Trident"]                = { collect = {{ life = 1 }, { calm = 1 }} }
+cards["Vortex of Destruction"]  = { collect = {{ death = 1, elan = 1 }} }
+cards["Water Dragon"]           = { vp = || 1 }
+cards["Wind Dragon"]            = { vp = || 1 }
+
+-- Monuments
+cards["Alchemical Lab"]   = { vp = || 1 }
+cards["Colossus"]         = { vp = || 2 }
+cards["Dark Cathedral"]   = { collect = {{ death = 1 }}, vp = function(card, playmat)
+    if artifact.untapped(card) and player.essence(playmat)["Gold"] >= 3 then
+        for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) and artifact.inPlayArea(colliding) do
+            if colliding.hasTag("card") and colliding.hasTag("demon") and artifact.untapped(colliding) then
+                return 3
+            end
+        end
+    end
+    return 2
+end }
+cards["Demon Workshop"]   = { collect = {{ elan = 1 }, { death = 1 }}, vp = || 1 }
+cards["Golden Statue"]    = { vp = function(card, playmat)
+    if artifact.untapped(card) and player.essence(playmat)["Gold"] >= 3 then
+        return 4
+    end
+    return 1
+end }
+cards["Great Pyramid"]    = { vp = || 3 }
+cards["Great Wall"]       = { collect = {{ elan = 1 }}, vp = || 2 }
+cards["Hanging Gardens"]  = { collect = {{ elan = 1}, { calm = 1 }, { life = 1}, { death = 1 }}, vp = || 1 }
+cards["Hidden Hall"]      = { vp = |card| 1 + artifact.countEssence(card)["Gold"] }
+cards["Library"]          = { vp = || 1 }
+cards["Mausoleum"]        = { vp = || 2 }
+cards["Obelisk"]          = { vp = || 1 }
+cards["Oracle"]           = { vp = || 2 }
+cards["Solomon's Mine"]   = { vp = || 1 }
+cards["Solomon's Temple"] = { vp = || 2 }
+cards["Temple"]           = { collect = {{ life = 1 }}, vp = || 2 }
+cards["Underwater Alter"] = { vp = || 1 }
+cards["Warrior's Hall"]   = { collect = {{ elan = 1 }}, vp = || 2 }
+
+-- Places of Power
+cards["Blood Isle / Pearl Bed"] = {
+    collect = {{ pearl = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Blood Isle
+            return artifact.countEssence(card)["Elan"]
+        else
+            -- Pearl Bed
+            return 2 * artifact.countEssence(card)["Pearl"]
+        end
+    end
+}
+
+cards["Catacombs of the Dead / Sacrificial Pit"] = {
+    collect = {{ death = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Sacrificial Pit
+            return 2 + artifact.countEssence(card)["Death"]
+        else
+            -- Catacombs of the Dead
+            return artifact.countEssence(card)["Death"]
+        end
+    end
+}
+
+cards["Coral Castle / Sunkeen Reef"] = {
+    collect = {{ gold = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Coral Castle
+            return 3
+        else
+            -- Sunken Reef
+            return artifact.countEssence(card)["Calm"]
+        end
+    end
+}
+
+cards["Cursed Forge / Dwarvern Mines"] = {
+    collect = {{ gold = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Dwarven Mines
+            return artifact.countEssence(card)["Gold"]
+        else
+            -- Cursed Forge
+            return 1 + artifact.countEssence(card)["Gold"]
+        end
+    end
+}
+
+cards["Dragon Aerie / Crystal Keep"] = {
+    collect = {{ gold = 1 }},
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Crystal Keep
+            local artifacts = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("artifact") and artifact.inPlayArea(colliding) then
+                    artifacts = artifacts + 1
+                end
+            end
+            return 5 + math.floor(artifacts / 2)
+        else
+            -- Dragon Aerie
+            return artifact.countEssence(card)["Life"]
+        end
+    end
+}
+
+cards["Dragon's Lair / Sorcerer's Bestiary"] = {
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Dragon's Lair
+            return artifact.countEssence(card)["Gold"]
+        else
+            -- Sorcerer's Bestiary
+            local total = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("card") and artifact.inPlayArea(colliding) then
+                    if colliding.hasTag("beast") then total = total + 1 end
+                    if colliding.hasTag("dragon") then total = total + 2 end
+                end
+            end
+            return total
+        end
+    end
+}
+
+cards["Mystical Menagerie / Alchemical Workshop"] = {
+    collect = {{ elan = 1 }, { calm = 1 }, { life = 1}, { death = 1 }},
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Mystical Menagerie
+            local beasts = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("card") and colliding.hasTag("beast") and artifact.inPlayArea(colliding) then
+                    beasts = beasts + 1
+                end
+            end
+            return beasts + artifact.countEssence(card)["Calm"]
+        else
+            -- Alchemical Workshop
+            return 2
+        end
+    end
+}
+
+cards["Sacred Grove / Alchemist Tower"] = {
+    collect = {{ elan = 1 }, { calm = 1 }, { life = 1}, { death = 1 }},
+    vp = function(card)
+        if not artifact.flipped(card) then
+            -- Sacred Grove
+            return 2 + artifact.countEssence(card)["Life"]
+        else
+            -- Alchemist's Tower
+            return artifact.countEssence(card)["Gold"]
+        end
+    end
+}
+
+cards["Temple of the Abyss / Gate of Hell"] = {
+    vp = function(card, playmat)
+        if not artifact.flipped(card) then
+            -- Gate of Hell
+            local demons = 0
+            for _, colliding in ipairs(artifact.getCollidingObjects(playmat)) do
+                if colliding.hasTag("card") and colliding.hasTag("demon") and artifact.inPlayArea(colliding) then
+                    demons = demons + 1
+                end
+            end
+            return demons + artifact.countEssence(card)["Death"]
+        else
+            -- Temple of the Abyss
+            return artifact.countEssence(card)["Calm"]
+        end
+    end
+}
+
+----#include cards
+----#include artifact
+----#include color
+color = {
+    ERROR = {r=1,   g=0.3, b=0.3 },
+    CALM  = {r=0.5, g=0.5, b=1   },
+    ELAN  = {r=1,   g=0.5, b=0.5 },
+    DEATH = {r=0.5, g=0.5, b=0.5 },
+    LIFE  = {r=0.5, g=1,   b=0.5 },
+    GOLD  = {r=1,   g=1,   b=0.5 },
+    PEARL = {r=1,   g=1,   b=1   },
+}
+
+----#include color
+----#include supply
+supply = {
+    pearl = || getObjectFromGUID("2d5039"),
+    gold  = || getObjectFromGUID("f9db70"),
+    death = || getObjectFromGUID("08759f"),
+    life  = || getObjectFromGUID("dda0ed"),
+    calm  = || getObjectFromGUID("fdfd7b"),
+    elan  = || getObjectFromGUID("b819b0"),
+}
+
+----#include supply
+
+artifact = {}
+
+artifact.untap = function(target)
+    target.setRotationSmooth({x=0, y=180, z=0})
+end
+
+artifact.tap = function(target)
+    target.setRotationSmooth({x=0, y=270, z=0})
+end
+
+artifact.tapped = function(target)
+    local y = target.getRotation().y 
+    return y > 181 and y < 359
+end
+
+artifact.untapped = function(target)
+    return not artifact.tapped(target)
+end
+
+artifact.flipped = function(target)
+    local rot = target.getRotation().z
+    return rot > 90 and rot < 270
+end
+
+artifact.tapAbility = function(target, callback)
+    return function(playerColor)
+        if artifact.untapped(target) then
+            callback(playerColor)
+            artifact.tap(target)
+        else
+            broadcastToColor("Cannot use this ability while tapped!", playerColor, color.ERROR)
+        end
+    end
+end
+
+artifact.placePosition = function(target)
+    local pos = target.getPosition()
+    return {x=pos.x, y=pos.y + 1, z=pos.z}
+end
+
+artifact.getCollidingObjects = function(target)
+    local bounds = target.getBounds()
+    local colliding = Physics.cast({
+        type = 3,
+        origin = bounds.center,
+        direction = {0, 1, 0},
+        size = {x = bounds.size.x, y = bounds.size.y, z = bounds.size.z},
+    })
+
+    function inHand(obj)
+        return obj.getPosition().y > 2
+    end
+
+    local objects = {}
+    for _, val in ipairs(colliding) do
+        if not inHand(val.hit_object) then
+            objects[#objects+1] = val.hit_object
+        end
+    end
+    return objects
+end
+
+artifact.inPlayArea = function(target)
+    return target.getPosition().z < -6.74 
+end
+
+artifact.countEssence = function(target)
+    local counts = {Pearl = 0, Gold = 0, Death = 0, Life = 0, Calm = 0, Elan = 0}
+    for _, colliding in ipairs(artifact.getCollidingObjects(target)) do
+        if colliding.hasTag("essence") then
+            local quantity = colliding.getQuantity()
+            if quantity < 1 then quantity = 1 end
+            counts[colliding.getName()] = counts[colliding.getName()] + quantity
+        end
+    end
+    return counts
+end
+
+artifact.addTakeEssence = function(target, callback)
+    target.addContextMenuItem("Take Essence", function(playerColor)
+        for _, obj in ipairs(artifact.getCollidingObjects(target)) do
+            if obj.hasTag("essence") then
+                obj.destroy() -- TODO
+                if callback != nil then
+                    callback()
+                end
+            end
+        end
+    end)
+end
+
+artifact.addTap = function(target)
+    target.addContextMenuItem("Tap", function(playerColor)
+        artifact.tap(target)
+    end)
+
+    target.addContextMenuItem("Un-tap", function(playerColor)
+        artifact.untap(target)
+    end)
+end
+
+artifact.addCollect = function(target, collect)
+    local multiCollect = #collect > 1
+
+    for _, essences in ipairs(collect) do
+        local title = "Collect"
+        for essence, amnt in pairs(essences) do
+            title = title .. " " .. math.max(amnt, 1) .. " " .. essence:sub(1, 1):upper()..essence:sub(2)
+        end
+
+        target.addContextMenuItem(title, function(playerColor)
+            for essence, amnt in pairs(essences) do
+                for i = 1, math.max(amnt, 1) do
+                    supply[essence]().takeObject({position = artifact.placePosition(target)})
+                end
+            end
+        end, multiCollect)
+    end
+end
+
+----#include artifact
+
+function onLoad()
+    startLuaCoroutine(self, "updateLoop")
+
+    local bounds = self.getBounds()
+    local size = bounds.size
+    local scale = self.getScale()
+    self.setVectorLines({{
+        points = {{-1, size.y + 0.01, 0.5}, {1, size.y + 0.01, 0.5}},
+        color = self.getName(),
+        thickness = .01,
+    }})
+
+    self.addDecal({
+        name = "VP Token Placeholder",
+        url = "https://i.imgur.com/JKXfhYK.png",
+        position = {0.8, size.y + 0.01, 0.65},
+        rotation = {90, 0, 0},
+        scale = {2 / scale.x, 2 / scale.z, 1},
+    })
+
+    self.addDecal({
+        name = "Deck Placeholder",
+        url = "https://i.imgur.com/MKEGjvX.png",
+        position = {0.5, size.y + 0.01, 0.65},
+        rotation = {90, 0, 0},
+        scale = {2 / scale.x, 3 / scale.z, 1},
+    })
+
+    self.addDecal({
+        name = "Discard Placeholder",
+        url = "https://i.imgur.com/MKEGjvX.png",
+        position = {0.2, size.y + 0.01, 0.65},
+        rotation = {90, 0, 0},
+        scale = {2 / scale.x, 3 / scale.z, 1},
+    })
+
+    self.setSnapPoints({
+        {
+            position = {0.8, size.y + 0.01, 0.65},
+            rotation = {0, 180, 0},
+            rotation_snap = true,
+        },
+        {
+            position = {0.5, size.y + 0.01, 0.65},
+            rotation = {0, 180, 0},
+            rotation_snap = true,
+        },
+        {
+            position = {0.2, size.y + 0.01, 0.65},
+            rotation = {0, 180, 0},
+            rotation_snap = true,
+        },
+    })
+
+end
+
+-- {8.16, 1.00, 12.67}
+
+function getScoreSummary()
+    local summary = {}
+
+    for i, obj in ipairs(artifact.getCollidingObjects(self)) do
+        if obj.getName() == "VP Token" then
+            summary["VP Token"] = (summary["VP Token"] or 0) + 1
+        elseif obj.hasTag("card") and artifact.inPlayArea(obj) then
+            local vp = ((cards[obj.getName()] or {})["vp"] or || 0)(obj, self)
+            if vp > 0 then
+                summary[obj.getName()] = (summary[obj.getName()] or 0) + vp
+            end
+        elseif obj.hasTag("essence") and obj.getName() == "Pearl" then
+            summary["Pearls"] = (summary["Pearls"] or 0) + artifact.countEssence(obj).Pearl
+        end
+    end
+    return summary
+end
+
+function totalScore(summary)
+    local total = 0
+    for name, value in pairs(summary) do
+        if value > 0 then
+            total = total + value
+        end
+    end
+    return total
+end
+
+currentScore = 0
+
+function updateUI()
+    local summary = getScoreSummary()
+    local score = totalScore(summary)
+
+    if currentScore != score then
+        local size = self.getBounds().size
+        self.UI.setXmlTable({
+            {
+                tag = "HorizontalLayout",
+                attributes = {
+                    height = size.x * 120,
+                    width = size.x * 120,
+                    position = "0 0 " .. (-size.z * 1.5),
+                    offsetXY = 0 .. " " .. 0,
+                    scale = 0.1,
+                    padding = "0 50 0 0",
+                },
+                children = {
+                    {
+                        tag = "Text",
+                        attributes = {
+                            alignment = "UpperRight",
+                            fontSize = 150,
+                            color = self.getName(),
+                        },
+                        value = score .. " vp",
+                    }
+                }
+            }
+        })
+    end
+
+    currentScore = score
+end
+
+function updateLoop()
+    updateUI()
+    Wait.Time(function()
+        updateLoop()
+    end, 1)
+    return 1
+end
+
+----#include libs/playmat

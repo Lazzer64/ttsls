@@ -1,0 +1,134 @@
+#include cards
+#include artifact
+
+function onLoad()
+    startLuaCoroutine(self, "updateLoop")
+
+    local bounds = self.getBounds()
+    local size = bounds.size
+    local scale = self.getScale()
+    self.setVectorLines({{
+        points = {{-1, size.y + 0.01, 0.5}, {1, size.y + 0.01, 0.5}},
+        color = self.getName(),
+        thickness = .01,
+    }})
+
+    self.addDecal({
+        name = "VP Token Placeholder",
+        url = "https://i.imgur.com/JKXfhYK.png",
+        position = {0.8, size.y + 0.01, 0.65},
+        rotation = {90, 0, 0},
+        scale = {2 / scale.x, 2 / scale.z, 1},
+    })
+
+    self.addDecal({
+        name = "Deck Placeholder",
+        url = "https://i.imgur.com/MKEGjvX.png",
+        position = {0.5, size.y + 0.01, 0.65},
+        rotation = {90, 0, 0},
+        scale = {2 / scale.x, 3 / scale.z, 1},
+    })
+
+    self.addDecal({
+        name = "Discard Placeholder",
+        url = "https://i.imgur.com/MKEGjvX.png",
+        position = {0.2, size.y + 0.01, 0.65},
+        rotation = {90, 0, 0},
+        scale = {2 / scale.x, 3 / scale.z, 1},
+    })
+
+    self.setSnapPoints({
+        {
+            position = {0.8, size.y + 0.01, 0.65},
+            rotation = {0, 180, 0},
+            rotation_snap = true,
+        },
+        {
+            position = {0.5, size.y + 0.01, 0.65},
+            rotation = {0, 180, 0},
+            rotation_snap = true,
+        },
+        {
+            position = {0.2, size.y + 0.01, 0.65},
+            rotation = {0, 180, 0},
+            rotation_snap = true,
+        },
+    })
+
+end
+
+-- {8.16, 1.00, 12.67}
+
+function getScoreSummary()
+    local summary = {}
+
+    for i, obj in ipairs(artifact.getCollidingObjects(self)) do
+        if obj.getName() == "VP Token" then
+            summary["VP Token"] = (summary["VP Token"] or 0) + 1
+        elseif obj.hasTag("card") and artifact.inPlayArea(obj) then
+            local vp = ((cards[obj.getName()] or {})["vp"] or || 0)(obj, self)
+            if vp > 0 then
+                summary[obj.getName()] = (summary[obj.getName()] or 0) + vp
+            end
+        elseif obj.hasTag("essence") and obj.getName() == "Pearl" then
+            summary["Pearls"] = (summary["Pearls"] or 0) + artifact.countEssence(obj).Pearl
+        end
+    end
+    return summary
+end
+
+function totalScore(summary)
+    local total = 0
+    for name, value in pairs(summary) do
+        if value > 0 then
+            total = total + value
+        end
+    end
+    return total
+end
+
+currentScore = 0
+
+function updateUI()
+    local summary = getScoreSummary()
+    local score = totalScore(summary)
+
+    if currentScore != score then
+        local size = self.getBounds().size
+        self.UI.setXmlTable({
+            {
+                tag = "HorizontalLayout",
+                attributes = {
+                    height = size.x * 120,
+                    width = size.x * 120,
+                    position = "0 0 " .. (-size.z * 1.5),
+                    offsetXY = 0 .. " " .. 0,
+                    scale = 0.1,
+                    padding = "0 50 0 0",
+                },
+                children = {
+                    {
+                        tag = "Text",
+                        attributes = {
+                            alignment = "UpperRight",
+                            fontSize = 150,
+                            color = self.getName(),
+                        },
+                        value = score .. " vp",
+                    }
+                }
+            }
+        })
+    end
+
+    currentScore = score
+end
+
+function updateLoop()
+    updateUI()
+    Wait.Time(function()
+        updateLoop()
+    end, 1)
+    return 1
+end
+

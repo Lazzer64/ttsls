@@ -1,0 +1,14 @@
+----#include libs/utils
+----#include log
+Log = {
+    info = |msg| broadcastToAll(msg),
+    error = |msg| broadcastToAll(msg, {0.98, 0.25, 0.26, 100}),
+}
+----#include log
+
+function println(msg)
+    Log.info(msg)
+end
+----#include libs/utils
+
+println("hello include stmt")

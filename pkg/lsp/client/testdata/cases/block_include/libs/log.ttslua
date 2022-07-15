@@ -1,0 +1,4 @@
+Log = {
+    info = |msg| broadcastToAll(msg),
+    error = |msg| broadcastToAll(msg, {0.98, 0.25, 0.26, 100}),
+}

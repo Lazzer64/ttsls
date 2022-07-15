@@ -1,0 +1,123 @@
+#include color
+#include supply
+
+artifact = {}
+
+artifact.untap = function(target)
+    target.setRotationSmooth({x=0, y=180, z=0})
+end
+
+artifact.tap = function(target)
+    target.setRotationSmooth({x=0, y=270, z=0})
+end
+
+artifact.tapped = function(target)
+    local y = target.getRotation().y 
+    return y > 181 and y < 359
+end
+
+artifact.untapped = function(target)
+    return not artifact.tapped(target)
+end
+
+artifact.flipped = function(target)
+    local rot = target.getRotation().z
+    return rot > 90 and rot < 270
+end
+
+artifact.tapAbility = function(target, callback)
+    return function(playerColor)
+        if artifact.untapped(target) then
+            callback(playerColor)
+            artifact.tap(target)
+        else
+            broadcastToColor("Cannot use this ability while tapped!", playerColor, color.ERROR)
+        end
+    end
+end
+
+artifact.placePosition = function(target)
+    local pos = target.getPosition()
+    return {x=pos.x, y=pos.y + 1, z=pos.z}
+end
+
+artifact.getCollidingObjects = function(target)
+    local bounds = target.getBounds()
+    local colliding = Physics.cast({
+        type = 3,
+        origin = bounds.center,
+        direction = {0, 1, 0},
+        size = {x = bounds.size.x, y = bounds.size.y, z = bounds.size.z},
+    })
+
+    function inHand(obj)
+        return obj.getPosition().y > 2
+    end
+
+    local objects = {}
+    for _, val in ipairs(colliding) do
+        if not inHand(val.hit_object) then
+            objects[#objects+1] = val.hit_object
+        end
+    end
+    return objects
+end
+
+artifact.inPlayArea = function(target)
+    return target.getPosition().z < -6.74 
+end
+
+artifact.countEssence = function(target)
+    local counts = {Pearl = 0, Gold = 0, Death = 0, Life = 0, Calm = 0, Elan = 0}
+    for _, colliding in ipairs(artifact.getCollidingObjects(target)) do
+        if colliding.hasTag("essence") then
+            local quantity = colliding.getQuantity()
+            if quantity < 1 then quantity = 1 end
+            counts[colliding.getName()] = counts[colliding.getName()] + quantity
+        end
+    end
+    return counts
+end
+
+artifact.addTakeEssence = function(target, callback)
+    target.addContextMenuItem("Take Essence", function(playerColor)
+        for _, obj in ipairs(artifact.getCollidingObjects(target)) do
+            if obj.hasTag("essence") then
+                obj.destroy() -- TODO
+                if callback != nil then
+                    callback()
+                end
+            end
+        end
+    end)
+end
+
+artifact.addTap = function(target)
+    target.addContextMenuItem("Tap", function(playerColor)
+        artifact.tap(target)
+    end)
+
+    target.addContextMenuItem("Un-tap", function(playerColor)
+        artifact.untap(target)
+    end)
+end
+
+artifact.addCollect = function(target, collect)
+    local multiCollect = #collect > 1
+
+    for _, essences in ipairs(collect) do
+        local title = "Collect"
+        for essence, amnt in pairs(essences) do
+            title = title .. " " .. math.max(amnt, 1) .. " " .. essence:sub(1, 1):upper()..essence:sub(2)
+        end
+
+        target.addContextMenuItem(title, function(playerColor)
+            for essence, amnt in pairs(essences) do
+                for i = 1, math.max(amnt, 1) do
+                    supply[essence]().takeObject({position = artifact.placePosition(target)})
+                end
+            end
+        end, multiCollect)
+    end
+end
+

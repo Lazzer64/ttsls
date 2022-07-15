@@ -1,0 +1,11 @@
+----#include libs/constants
+COLORS = {
+    RED = "#ff0000",
+    GREEN = "#00ff00",
+    BLUE = "#0000ff",
+}
+----#include libs/constants
+
+User[1].color = COLORS.RED
+User[2].color = COLORS.GREEN
+User[3].color = COLORS.BLUE

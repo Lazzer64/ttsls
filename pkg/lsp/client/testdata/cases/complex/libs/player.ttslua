@@ -1,0 +1,22 @@
+#include artifact
+
+player = {}
+
+player.essence = function(playmat)
+    local essence = artifact.countEssence(playmat)
+    for _, obj in ipairs(artifact.getCollidingObjects(playmat)) do
+        if obj.hasTag("card") then
+            local cardEssence = artifact.countEssence(obj)
+            essence = {
+                Pearl = essence.Pearl - cardEssence.Pearl,
+                Gold = essence.Gold - cardEssence.Gold,
+                Death = essence.Death - cardEssence.Death,
+                Life = essence.Life - cardEssence.Life,
+                Calm = essence.Calm - cardEssence.Calm,
+                Elan = essence.Elan - cardEssence.Elan,
+            }
+        end
+    end
+    return essence
+end
+

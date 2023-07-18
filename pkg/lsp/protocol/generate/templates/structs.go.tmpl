@@ -15,7 +15,7 @@ type {{ $struct.Name | title }} struct {
 {{- if .Documentation }}
 {{ .Documentation | comment | indent }}
 {{- end }}
-{{ .Name | title | indent }} {{ if eq $struct.Name .Type.Name }}{{ printf "*%s" (.Type | gotype) }}{{ else }}{{ .Type | gotype }}{{ end }} `json:"{{ .Name }}"`
+{{ .Name | title | indent }} {{ if eq $struct.Name .Type.Name }}{{ printf "*%s" (.Type | gotype) }}{{ else }}{{ .Type | gotype }}{{ end }} `json:"{{ .Name }}{{ if .Optional }},omitempty{{ end }}"`
 {{- end }}
 }
 {{ end -}}

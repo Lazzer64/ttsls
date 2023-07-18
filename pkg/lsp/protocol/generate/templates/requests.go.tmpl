@@ -22,8 +22,8 @@ func New{{ $title }}Request(id int, params {{ $req.Params | gotype }}) {{ $title
 }
 
 // Marshal r into {{ $title }}Request
-func (r Request) {{ $title }}() (v {{ $title }}Request) {
-{{ "json.Unmarshal(r.raw, &v)" | indent }}
+func (m Message) {{ $title }}() (v {{ $title }}Request) {
+{{ "json.Unmarshal(m.raw, &v)" | indent }}
 {{ "return" | indent }}
 }
 {{ end -}}

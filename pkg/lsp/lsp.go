@@ -9,10 +9,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/lazzer64/ttsls/pkg/lsp/handler"
-	"github.com/lazzer64/ttsls/pkg/lsp/message"
-	"github.com/lazzer64/ttsls/pkg/lsp/message/types"
 	"github.com/lazzer64/ttsls/pkg/lsp/client"
+	"github.com/lazzer64/ttsls/pkg/lsp/handler"
+	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/tts"
 )
 
@@ -83,10 +82,10 @@ func (m includeManager) ReadInclude(name string) ([]byte, error) {
 func (lsp *LSP) Serve(ctx context.Context, r io.Reader, w io.Writer) {
 	client := client.New(w)
 
-	msgChan := make(chan message.UndefinedMessage)
+	msgChan := make(chan protocol.Message)
 	go func(r io.Reader) {
 		for {
-			msg, err := message.ReadMessage(r)
+			msg, err := protocol.ReadMessage(r)
 			if err != nil {
 				log.Printf("LSP  Error reading message: %s", err)
 				continue
@@ -98,7 +97,7 @@ func (lsp *LSP) Serve(ctx context.Context, r io.Reader, w io.Writer) {
 	for {
 		select {
 		case msg := <-msgChan:
-			log.Printf("RECV %s\n", msg.Bytes())
+			log.Printf("RECV %v\n", msg)
 			if hand, ok := lsp.handlers[msg.Method]; ok {
 				go hand(client, msg)
 			} else if msg.Method != "" && !strings.HasPrefix(msg.Method, "$/") {
@@ -111,39 +110,39 @@ func (lsp *LSP) Serve(ctx context.Context, r io.Reader, w io.Writer) {
 	}
 }
 
-func (lsp *LSP) initializeHandler(client client.Client, u message.UndefinedMessage) {
+func (lsp *LSP) initializeHandler(c client.Client, u protocol.Message) {
 	msg := u.Initialize()
-	capabilities := map[string]types.ServerCapabilities{"capabilities": {
-		PositionEncoding: types.PositionEncodingKindUTF16,
-		TextDocumentSync: types.TextDocumentSyncOptions{
+	capabilities := map[string]protocol.ServerCapabilities{"capabilities": {
+		PositionEncoding: protocol.PositionEncodingKindUTF16,
+		TextDocumentSync: protocol.TextDocumentSyncOptions{
 			OpenClose: true,
-			Change:    types.TextDocumentSyncKindFull,
+			Change:    protocol.TextDocumentSyncKindFull,
 		},
-		DefinitionProvider: types.DefinitionOptions{
-			DocumentSelector: []types.DocumentFilter{{
+		DefinitionProvider: protocol.TextDocumentRegistrationOptions{
+			DocumentSelector: []struct{ Pattern string }{{
 				Pattern: "*.ttslua",
 			}},
 		},
-		HoverProvider: types.HoverOptions{
-			DocumentSelector: []types.DocumentFilter{{
+		HoverProvider: protocol.TextDocumentRegistrationOptions{
+			DocumentSelector: []struct{ Pattern string }{{
 				Pattern: "*.ttslua",
 			}},
 		},
-		ExecuteCommandProvider: types.ExecuteCommandOptions{
+		ExecuteCommandProvider: protocol.ExecuteCommandOptions{
 			Commands: []string{"tts.exec", "tts.getScripts", "tts.saveAndPlay"},
 		},
-		CompletionProvider: types.CompletionOptions{
+		CompletionProvider: protocol.CompletionOptions{
 			TriggerCharacters: []string{"."},
 		},
-		SignatureHelpProvider: types.SignatureHelpOptions{
-			TriggerCharacters: []string{},
+		SignatureHelpProvider: protocol.SignatureHelpOptions{
+			TriggerCharacters:   []string{},
 			RetriggerCharacters: []string{},
 		},
 	}}
-	client.Send(message.NewResponseMessage(msg.Id, capabilities, nil))
+	c.Send(protocol.NewResponse(msg.Id, capabilities))
 }
 
-func (lsp *LSP) initializedHandler(client client.Client, u message.UndefinedMessage) {
+func (lsp *LSP) initializedHandler(client client.Client, u protocol.Message) {
 	lsp.initialized = true
 	log.Println("LSP  Client initialized")
 
@@ -151,8 +150,5 @@ func (lsp *LSP) initializedHandler(client client.Client, u message.UndefinedMess
 		lsp.ttsHandler(client, msg)
 	})
 
-	client.Send(message.NewShowMessageNotification(
-		message.MessageTypeInfo,
-		"ttsls initialized",
-	))
+	client.Log(protocol.MessageTypeInfo, "ttsls initialized")
 }

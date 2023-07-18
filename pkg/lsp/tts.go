@@ -2,39 +2,39 @@ package lsp
 
 import (
 	"github.com/lazzer64/ttsls/pkg/lsp/client"
-	"github.com/lazzer64/ttsls/pkg/lsp/message"
+	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/tts"
 )
 
 func (lsp *LSP) ttsHandler(c client.Client, msg tts.TTSMessage) {
 	switch msg.MessageID {
 	case tts.GAME_LOADED_RESPONSE:
-		c.LogInfo("Game Loaded")
+		c.Log(protocol.MessageTypeInfo, "Game Loaded")
 
 	case tts.NEW_OBJECT_RESPONSE:
 		for _, ss := range msg.ScriptStates {
 			uri, err := ss.URI()
 			if err != nil {
-				c.LogError(err.Error())
+				c.Log(protocol.MessageTypeError, err.Error())
 				continue
 			}
 			c.Files.Write(uri, ss.Script)
 			c.Send(
-				message.NewRequestMessage(
+				protocol.NewWindowShowDocumentRequest(
 					lsp.nextId(),
-					"window/showDocument",
-					map[string]interface{}{
-						"uri":       uri,
-						"takeFocus": true,
+					protocol.ShowDocumentParams{
+						Uri:       protocol.URI(uri),
+						External:  false,
+						TakeFocus: true,
 					},
 				),
 			)
 		}
 
 	case tts.PRINT_RESPONSE:
-		c.LogInfo(msg.Message)
+		c.Log(protocol.MessageTypeInfo, msg.Message)
 
 	case tts.ERROR_RESPONSE:
-		c.LogError(msg.Error)
+		c.Log(protocol.MessageTypeError, msg.Error)
 	}
 }

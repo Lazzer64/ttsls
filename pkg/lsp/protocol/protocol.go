@@ -12,15 +12,16 @@ import (
 type DocumentUri string
 type URI string
 
-type Request struct {
+type Message struct {
+	Id      int    `json:"id"`
 	Jsonrpc string `json:"jsonrpc"`
 	Method  string `json:"method"`
 	raw     []byte
 }
 
-func ReadRequest(r io.Reader) (Request, error) {
+func ReadMessage(r io.Reader) (Message, error) {
 	length := 0
-	resp := Request{}
+	resp := Message{}
 
 	_, err := fmt.Fscanf(r, "Content-Length: %d\r\n\r\n", &length)
 	// TODO: handle optional Content-Type
@@ -38,4 +39,39 @@ func ReadRequest(r io.Reader) (Request, error) {
 	json.Unmarshal(buf, &resp)
 	resp.raw = buf
 	return resp, nil
+}
+
+type Response struct {
+	Id      int            `json:"id"`
+	Jsonrpc string         `json:"jsonrpc"`
+	Result  any            `json:"result,omitempty"`
+	Error   *ResponseError `json:"error,omitempty"`
+}
+
+type ResponseError struct {
+	Code    int `json:"code"`
+	Message string     `json:"message"`
+	Data    any        `json:"data,omitempty"`
+}
+
+func NewResponse(id int, result any) Response {
+	return Response{
+		Id:      id,
+		Jsonrpc: "2.0",
+		Result:  result,
+		Error:   nil,
+	}
+}
+
+func NewErrorResponse[T ~int](id int, code T, err error) Response {
+	return Response{
+		Id:      id,
+		Jsonrpc: "2.0",
+		Result:  nil,
+		Error: &ResponseError{
+			Code:    int(code),
+			Message: err.Error(),
+			Data:    err.Error(),
+		},
+	}
 }

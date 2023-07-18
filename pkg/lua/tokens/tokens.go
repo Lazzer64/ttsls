@@ -91,7 +91,7 @@ func (t Token) String() string {
 }
 
 type Position struct {
-	Line, Character int
+	Line, Character uint32
 }
 
 var reserved = map[string]TokenType{

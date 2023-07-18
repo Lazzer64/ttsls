@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,37 +8,37 @@ import (
 	"strings"
 
 	"github.com/lazzer64/ttsls/pkg/lsp/client"
-	"github.com/lazzer64/ttsls/pkg/lsp/message"
-	"github.com/lazzer64/ttsls/pkg/lsp/message/types"
+	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/lua/tokens"
+	"github.com/lazzer64/ttsls/pkg/uri"
 )
 
-func TextDocumentDidOpenHandler(client client.Client, u message.UndefinedMessage) {
-	m := u.TextDocumentDidOpenMessage()
-	client.Files.Open(m.Params.TextDocument.Uri, m.Params.TextDocument.Text)
+func TextDocumentDidOpenHandler(client client.Client, u protocol.Message) {
+	m := u.TextDocumentDidOpen()
+	client.Files.Open(uri.URI(m.Params.TextDocument.Uri), m.Params.TextDocument.Text)
 }
 
-func TextDocumentDidCloseHandler(client client.Client, u message.UndefinedMessage) {
-	m := u.TextDocumentDidCloseMessage()
-	client.Files.Close(m.Params.TextDocument.Uri)
+func TextDocumentDidCloseHandler(client client.Client, u protocol.Message) {
+	m := u.TextDocumentDidClose()
+	client.Files.Close(uri.URI(m.Params.TextDocument.Uri))
 }
 
-func TextDocumentDidChangeHandler(client client.Client, u message.UndefinedMessage) {
-	m := u.TextDocumentDidChangeMessage()
-	for _, change := range m.Params.ContentChanges {
+func TextDocumentDidChangeHandler(client client.Client, u protocol.Message) {
+	m := u.TextDocumentDidChange()
+	for _, change := range m.Params.ContentChanges.([]struct{ Text string }) {
 		client.Files.Change(
-			m.Params.TextDocument.Uri,
+			uri.URI(m.Params.TextDocument.Uri),
 			change.Text,
 		)
 	}
 }
 
-func TextDocumentDefinitionHandler(client client.Client, u message.UndefinedMessage) {
+func TextDocumentDefinitionHandler(client client.Client, u protocol.Message) {
 	msg := u.TextDocumentDefinition()
 
-	f, err := client.Files.Get(msg.Params.TextDocument.Uri)
+	f, err := client.Files.Get(uri.URI(msg.Params.TextDocument.Uri))
 	if err != nil {
-		client.InternalError(msg.Id, err)
+		client.Log(protocol.MessageTypeError, err.Error())
 		return
 	}
 
@@ -57,35 +56,41 @@ func TextDocumentDefinitionHandler(client client.Client, u message.UndefinedMess
 			}
 			if _, err := os.Stat(fname); err == nil {
 				log.Printf("LSP  Found source file at %s\n", fname)
-				client.Send(
-					message.NewResponseMessage(
-						msg.Id,
-						map[string]interface{}{
-							"uri": fmt.Sprintf("file:///%s", fname),
-							"range": types.Range{
-								Start: types.Position{Character: 0, Line: 0},
-								End:   types.Position{Character: 0, Line: 0},
-							},
-						},
-						nil,
-					),
-				)
+				client.Send(protocol.NewResponse(msg.Id, []protocol.Location{protocol.Location{
+					Uri: protocol.DocumentUri(fmt.Sprintf("file:///%s", fname)),
+					Range: protocol.Range{
+						Start: protocol.Position{Line: 0, Character: 0},
+						End:   protocol.Position{Line: 0, Character: 0},
+					},
+				}}))
 				return
 			} else {
-				client.RequestFailed(msg.Id, fmt.Errorf("Could not find file %q", fname))
+				client.Send(protocol.NewErrorResponse(
+					msg.Id,
+					protocol.ErrorCodesInvalidRequest,
+					fmt.Errorf("Could not find file %q", fname),
+				))
 				return
 			}
 		}
 	}
-	client.RequestFailed(msg.Id, errors.New("No definition available"))
+	client.Send(protocol.NewErrorResponse(
+		msg.Id,
+		protocol.LSPErrorCodesRequestFailed,
+		fmt.Errorf("No definition available"),
+	))
 }
 
-func TextDocumentHoverHandler(client client.Client, u message.UndefinedMessage) {
+func TextDocumentHoverHandler(client client.Client, u protocol.Message) {
 	msg := u.TextDocumentHover()
 
-	f, err := client.Files.Get(msg.Params.TextDocument.Uri)
+	f, err := client.Files.Get(uri.URI(msg.Params.TextDocument.Uri))
 	if err != nil {
-		client.InternalError(msg.Id, fmt.Errorf("Could not read file %s: %w", msg.Params.TextDocument.Uri, err))
+		client.Send(protocol.NewErrorResponse(
+			msg.Id,
+			protocol.ErrorCodesInternalError,
+			fmt.Errorf("Could not read file %s: %w", msg.Params.TextDocument.Uri, err),
+		))
 		return
 	}
 
@@ -94,16 +99,16 @@ func TextDocumentHoverHandler(client client.Client, u message.UndefinedMessage) 
 			for k, category := range api.Sections {
 				for _, v := range category {
 					if t.Value == v.Name {
-						client.Send(message.NewResponseMessage(msg.Id, map[string]any{
-							"range": types.Range{
-								Start: types.Position{Character: t.Start.Character, Line: t.Start.Line},
-								End:   types.Position{Character: t.Stop.Character + 1, Line: t.Stop.Line},
+						client.Send(protocol.NewResponse(msg.Id, protocol.Hover{
+							Range: protocol.Range{
+								Start: protocol.Position{Character: t.Start.Character, Line: t.Start.Line},
+								End:   protocol.Position{Character: t.Stop.Character + 1, Line: t.Stop.Line},
 							},
-							"contents": map[string]any{
-								"kind":  "markdown",
-								"value": v.Markdown(),
+							Contents: protocol.MarkupContent{
+								Kind:  protocol.MarkupKindMarkdown,
+								Value: v.Markdown(),
 							},
-						}, nil))
+						}))
 						return
 					}
 				}
@@ -112,68 +117,70 @@ func TextDocumentHoverHandler(client client.Client, u message.UndefinedMessage) 
 					for _, v := range category {
 						names = append(names, v.Short())
 					}
-					client.Send(message.NewResponseMessage(msg.Id, map[string]any{
-						"range": types.Range{
-							Start: types.Position{Character: t.Start.Character, Line: t.Start.Line},
-							End:   types.Position{Character: t.Stop.Character + 1, Line: t.Stop.Line},
+					client.Send(protocol.NewResponse(msg.Id, protocol.Hover{
+						Range: protocol.Range{
+							Start: protocol.Position{Character: t.Start.Character, Line: t.Start.Line},
+							End:   protocol.Position{Character: t.Stop.Character + 1, Line: t.Stop.Line},
 						},
-						"contents": map[string]any{
-							"kind":  "markdown",
-							"value": fmt.Sprintf("%s\n```lua\n%s\n```", k, strings.Join(names, "\n")),
+						Contents: protocol.MarkupContent{
+							Kind:  protocol.MarkupKindMarkdown,
+							Value: fmt.Sprintf("%s\n```lua\n%s\n```", k, strings.Join(names, "\n")),
 						},
-					}, nil))
+					}))
 					return
 				}
 			}
 		}
 	}
-	client.RequestFailed(msg.Id, errors.New("No hover available"))
+	client.Send(protocol.NewErrorResponse(
+		msg.Id,
+		protocol.LSPErrorCodesRequestFailed,
+		fmt.Errorf("No hover available"),
+	))
 }
 
-func TextDocumentCompletionHandler(client client.Client, u message.UndefinedMessage) {
-	msg := u.Completion()
-	items := []map[string]any{}
+func TextDocumentCompletionHandler(client client.Client, u protocol.Message) {
+	msg := u.TextDocumentCompletion()
+	items := []protocol.CompletionItem{}
 
 	category := api.Sections["/"]
 	category = append(category, api.Sections["GlobalEvents"]...)
-	if !strings.HasSuffix(msg.Params.TextDocument.Uri.Path(), "Global.-1.ttslua") {
+	if !strings.HasSuffix(string(msg.Params.TextDocument.Uri), "Global.-1.ttslua") {
 		category = append(category, api.Sections["ObjectEvents"]...)
 	}
-	if msg.Params.Context.TriggerKind == types.TriggerCharacterTrigger {
+	if msg.Params.Context.TriggerKind == protocol.CompletionTriggerKindTriggerCharacter {
 		category = api.Sections["Object"]
 	}
 
 	for _, v := range category {
-		kind := types.TextCompletion
+		kind := protocol.CompletionItemKindText
 		switch v.Kind {
 		case apiParameterKindClass:
-			kind = types.ClassCompletion
+			kind = protocol.CompletionItemKindClass
 		case apiParameterKindConstant:
-			kind = types.ConstantCompletion
+			kind = protocol.CompletionItemKindConstant
 		case apiParameterKindEvent:
-			kind = types.EventCompletion
+			kind = protocol.CompletionItemKindEvent
 		case apiParameterKindFunction:
-			kind = types.FunctionCompletion
+			kind = protocol.CompletionItemKindFunction
 		case apiParameterKindProperty:
-			kind = types.PropertyCompletion
+			kind = protocol.CompletionItemKindProperty
 		}
-		items = append(items, map[string]any{
-			"label": v.Name,
-			"kind":  kind,
-			"documentation": map[string]any{
-				"kind":  "markdown",
-				"value": v.Markdown(),
+		items = append(items, protocol.CompletionItem{
+			Label: v.Name,
+			Kind:  kind,
+			Documentation: protocol.MarkupContent{
+				Kind:  protocol.MarkupKindMarkdown,
+				Value: v.Markdown(),
 			},
 		})
 	}
 
-	client.Send(message.NewResponseMessage(msg.Id, map[string]any{
-		"items": items,
-	}, nil))
+	client.Send(protocol.NewResponse(msg.Id, items))
 }
 
-func TextDocumentSignatureHelpHandler(client client.Client, u message.UndefinedMessage) {
+func TextDocumentSignatureHelpHandler(client client.Client, u protocol.Message) {
 }
 
-func TextDocumentCodeActionHandler(client client.Client, u message.UndefinedMessage) {
+func TextDocumentCodeActionHandler(client client.Client, u protocol.Message) {
 }

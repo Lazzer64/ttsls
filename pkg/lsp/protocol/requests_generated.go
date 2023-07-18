@@ -22,8 +22,8 @@ func NewTextDocumentImplementationRequest(id int, params ImplementationParams) T
 }
 
 // Marshal r into TextDocumentImplementationRequest
-func (r Request) TextDocumentImplementation() (v TextDocumentImplementationRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentImplementation() (v TextDocumentImplementationRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -45,8 +45,8 @@ func NewTextDocumentTypeDefinitionRequest(id int, params TypeDefinitionParams) T
 }
 
 // Marshal r into TextDocumentTypeDefinitionRequest
-func (r Request) TextDocumentTypeDefinition() (v TextDocumentTypeDefinitionRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentTypeDefinition() (v TextDocumentTypeDefinitionRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -65,8 +65,8 @@ func NewWorkspaceWorkspaceFoldersRequest(id int, params any) WorkspaceWorkspaceF
 }
 
 // Marshal r into WorkspaceWorkspaceFoldersRequest
-func (r Request) WorkspaceWorkspaceFolders() (v WorkspaceWorkspaceFoldersRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceWorkspaceFolders() (v WorkspaceWorkspaceFoldersRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -91,8 +91,8 @@ func NewWorkspaceConfigurationRequest(id int, params ConfigurationParams) Worksp
 }
 
 // Marshal r into WorkspaceConfigurationRequest
-func (r Request) WorkspaceConfiguration() (v WorkspaceConfigurationRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceConfiguration() (v WorkspaceConfigurationRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -114,8 +114,8 @@ func NewTextDocumentDocumentColorRequest(id int, params DocumentColorParams) Tex
 }
 
 // Marshal r into TextDocumentDocumentColorRequest
-func (r Request) TextDocumentDocumentColor() (v TextDocumentDocumentColorRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDocumentColor() (v TextDocumentDocumentColorRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -137,8 +137,8 @@ func NewTextDocumentColorPresentationRequest(id int, params ColorPresentationPar
 }
 
 // Marshal r into TextDocumentColorPresentationRequest
-func (r Request) TextDocumentColorPresentation() (v TextDocumentColorPresentationRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentColorPresentation() (v TextDocumentColorPresentationRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -160,8 +160,8 @@ func NewTextDocumentFoldingRangeRequest(id int, params FoldingRangeParams) TextD
 }
 
 // Marshal r into TextDocumentFoldingRangeRequest
-func (r Request) TextDocumentFoldingRange() (v TextDocumentFoldingRangeRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentFoldingRange() (v TextDocumentFoldingRangeRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -184,8 +184,8 @@ func NewTextDocumentDeclarationRequest(id int, params DeclarationParams) TextDoc
 }
 
 // Marshal r into TextDocumentDeclarationRequest
-func (r Request) TextDocumentDeclaration() (v TextDocumentDeclarationRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDeclaration() (v TextDocumentDeclarationRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -207,8 +207,8 @@ func NewTextDocumentSelectionRangeRequest(id int, params SelectionRangeParams) T
 }
 
 // Marshal r into TextDocumentSelectionRangeRequest
-func (r Request) TextDocumentSelectionRange() (v TextDocumentSelectionRangeRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentSelectionRange() (v TextDocumentSelectionRangeRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -228,8 +228,8 @@ func NewWindowWorkDoneProgressCreateRequest(id int, params WorkDoneProgressCreat
 }
 
 // Marshal r into WindowWorkDoneProgressCreateRequest
-func (r Request) WindowWorkDoneProgressCreate() (v WindowWorkDoneProgressCreateRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WindowWorkDoneProgressCreate() (v WindowWorkDoneProgressCreateRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -251,8 +251,8 @@ func NewTextDocumentPrepareCallHierarchyRequest(id int, params CallHierarchyPrep
 }
 
 // Marshal r into TextDocumentPrepareCallHierarchyRequest
-func (r Request) TextDocumentPrepareCallHierarchy() (v TextDocumentPrepareCallHierarchyRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentPrepareCallHierarchy() (v TextDocumentPrepareCallHierarchyRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -273,8 +273,8 @@ func NewCallHierarchyIncomingCallsRequest(id int, params CallHierarchyIncomingCa
 }
 
 // Marshal r into CallHierarchyIncomingCallsRequest
-func (r Request) CallHierarchyIncomingCalls() (v CallHierarchyIncomingCallsRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) CallHierarchyIncomingCalls() (v CallHierarchyIncomingCallsRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -295,8 +295,8 @@ func NewCallHierarchyOutgoingCallsRequest(id int, params CallHierarchyOutgoingCa
 }
 
 // Marshal r into CallHierarchyOutgoingCallsRequest
-func (r Request) CallHierarchyOutgoingCalls() (v CallHierarchyOutgoingCallsRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) CallHierarchyOutgoingCalls() (v CallHierarchyOutgoingCallsRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -315,8 +315,8 @@ func NewTextDocumentSemanticTokensFullRequest(id int, params SemanticTokensParam
 }
 
 // Marshal r into TextDocumentSemanticTokensFullRequest
-func (r Request) TextDocumentSemanticTokensFull() (v TextDocumentSemanticTokensFullRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentSemanticTokensFull() (v TextDocumentSemanticTokensFullRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -335,8 +335,8 @@ func NewTextDocumentSemanticTokensFullDeltaRequest(id int, params SemanticTokens
 }
 
 // Marshal r into TextDocumentSemanticTokensFullDeltaRequest
-func (r Request) TextDocumentSemanticTokensFullDelta() (v TextDocumentSemanticTokensFullDeltaRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentSemanticTokensFullDelta() (v TextDocumentSemanticTokensFullDeltaRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -355,8 +355,8 @@ func NewTextDocumentSemanticTokensRangeRequest(id int, params SemanticTokensRang
 }
 
 // Marshal r into TextDocumentSemanticTokensRangeRequest
-func (r Request) TextDocumentSemanticTokensRange() (v TextDocumentSemanticTokensRangeRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentSemanticTokensRange() (v TextDocumentSemanticTokensRangeRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -375,8 +375,8 @@ func NewWorkspaceSemanticTokensRefreshRequest(id int, params any) WorkspaceSeman
 }
 
 // Marshal r into WorkspaceSemanticTokensRefreshRequest
-func (r Request) WorkspaceSemanticTokensRefresh() (v WorkspaceSemanticTokensRefreshRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceSemanticTokensRefresh() (v WorkspaceSemanticTokensRefreshRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -400,8 +400,8 @@ func NewWindowShowDocumentRequest(id int, params ShowDocumentParams) WindowShowD
 }
 
 // Marshal r into WindowShowDocumentRequest
-func (r Request) WindowShowDocument() (v WindowShowDocumentRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WindowShowDocument() (v WindowShowDocumentRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -422,8 +422,8 @@ func NewTextDocumentLinkedEditingRangeRequest(id int, params LinkedEditingRangeP
 }
 
 // Marshal r into TextDocumentLinkedEditingRangeRequest
-func (r Request) TextDocumentLinkedEditingRange() (v TextDocumentLinkedEditingRangeRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentLinkedEditingRange() (v TextDocumentLinkedEditingRangeRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -445,8 +445,8 @@ func NewWorkspaceWillCreateFilesRequest(id int, params CreateFilesParams) Worksp
 }
 
 // Marshal r into WorkspaceWillCreateFilesRequest
-func (r Request) WorkspaceWillCreateFiles() (v WorkspaceWillCreateFilesRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceWillCreateFiles() (v WorkspaceWillCreateFilesRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -468,8 +468,8 @@ func NewWorkspaceWillRenameFilesRequest(id int, params RenameFilesParams) Worksp
 }
 
 // Marshal r into WorkspaceWillRenameFilesRequest
-func (r Request) WorkspaceWillRenameFiles() (v WorkspaceWillRenameFilesRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceWillRenameFiles() (v WorkspaceWillRenameFilesRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -491,8 +491,8 @@ func NewWorkspaceWillDeleteFilesRequest(id int, params DeleteFilesParams) Worksp
 }
 
 // Marshal r into WorkspaceWillDeleteFilesRequest
-func (r Request) WorkspaceWillDeleteFiles() (v WorkspaceWillDeleteFilesRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceWillDeleteFiles() (v WorkspaceWillDeleteFilesRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -513,8 +513,8 @@ func NewTextDocumentMonikerRequest(id int, params MonikerParams) TextDocumentMon
 }
 
 // Marshal r into TextDocumentMonikerRequest
-func (r Request) TextDocumentMoniker() (v TextDocumentMonikerRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentMoniker() (v TextDocumentMonikerRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -536,8 +536,8 @@ func NewTextDocumentPrepareTypeHierarchyRequest(id int, params TypeHierarchyPrep
 }
 
 // Marshal r into TextDocumentPrepareTypeHierarchyRequest
-func (r Request) TextDocumentPrepareTypeHierarchy() (v TextDocumentPrepareTypeHierarchyRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentPrepareTypeHierarchy() (v TextDocumentPrepareTypeHierarchyRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -558,8 +558,8 @@ func NewTypeHierarchySupertypesRequest(id int, params TypeHierarchySupertypesPar
 }
 
 // Marshal r into TypeHierarchySupertypesRequest
-func (r Request) TypeHierarchySupertypes() (v TypeHierarchySupertypesRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TypeHierarchySupertypes() (v TypeHierarchySupertypesRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -580,8 +580,8 @@ func NewTypeHierarchySubtypesRequest(id int, params TypeHierarchySubtypesParams)
 }
 
 // Marshal r into TypeHierarchySubtypesRequest
-func (r Request) TypeHierarchySubtypes() (v TypeHierarchySubtypesRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TypeHierarchySubtypes() (v TypeHierarchySubtypesRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -604,8 +604,8 @@ func NewTextDocumentInlineValueRequest(id int, params InlineValueParams) TextDoc
 }
 
 // Marshal r into TextDocumentInlineValueRequest
-func (r Request) TextDocumentInlineValue() (v TextDocumentInlineValueRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentInlineValue() (v TextDocumentInlineValueRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -624,8 +624,8 @@ func NewWorkspaceInlineValueRefreshRequest(id int, params any) WorkspaceInlineVa
 }
 
 // Marshal r into WorkspaceInlineValueRefreshRequest
-func (r Request) WorkspaceInlineValueRefresh() (v WorkspaceInlineValueRefreshRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceInlineValueRefresh() (v WorkspaceInlineValueRefreshRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -648,8 +648,8 @@ func NewTextDocumentInlayHintRequest(id int, params InlayHintParams) TextDocumen
 }
 
 // Marshal r into TextDocumentInlayHintRequest
-func (r Request) TextDocumentInlayHint() (v TextDocumentInlayHintRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentInlayHint() (v TextDocumentInlayHintRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -672,8 +672,8 @@ func NewInlayHintResolveRequest(id int, params InlayHint) InlayHintResolveReques
 }
 
 // Marshal r into InlayHintResolveRequest
-func (r Request) InlayHintResolve() (v InlayHintResolveRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) InlayHintResolve() (v InlayHintResolveRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -692,8 +692,8 @@ func NewWorkspaceInlayHintRefreshRequest(id int, params any) WorkspaceInlayHintR
 }
 
 // Marshal r into WorkspaceInlayHintRefreshRequest
-func (r Request) WorkspaceInlayHintRefresh() (v WorkspaceInlayHintRefreshRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceInlayHintRefresh() (v WorkspaceInlayHintRefreshRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -714,8 +714,8 @@ func NewTextDocumentDiagnosticRequest(id int, params DocumentDiagnosticParams) T
 }
 
 // Marshal r into TextDocumentDiagnosticRequest
-func (r Request) TextDocumentDiagnostic() (v TextDocumentDiagnosticRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDiagnostic() (v TextDocumentDiagnosticRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -736,8 +736,8 @@ func NewWorkspaceDiagnosticRequest(id int, params WorkspaceDiagnosticParams) Wor
 }
 
 // Marshal r into WorkspaceDiagnosticRequest
-func (r Request) WorkspaceDiagnostic() (v WorkspaceDiagnosticRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceDiagnostic() (v WorkspaceDiagnosticRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -758,8 +758,8 @@ func NewWorkspaceDiagnosticRefreshRequest(id int, params any) WorkspaceDiagnosti
 }
 
 // Marshal r into WorkspaceDiagnosticRefreshRequest
-func (r Request) WorkspaceDiagnosticRefresh() (v WorkspaceDiagnosticRefreshRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceDiagnosticRefresh() (v WorkspaceDiagnosticRefreshRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -779,8 +779,8 @@ func NewClientRegisterCapabilityRequest(id int, params RegistrationParams) Clien
 }
 
 // Marshal r into ClientRegisterCapabilityRequest
-func (r Request) ClientRegisterCapability() (v ClientRegisterCapabilityRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) ClientRegisterCapability() (v ClientRegisterCapabilityRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -800,8 +800,8 @@ func NewClientUnregisterCapabilityRequest(id int, params UnregistrationParams) C
 }
 
 // Marshal r into ClientUnregisterCapabilityRequest
-func (r Request) ClientUnregisterCapability() (v ClientUnregisterCapabilityRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) ClientUnregisterCapability() (v ClientUnregisterCapabilityRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -824,8 +824,8 @@ func NewInitializeRequest(id int, params InitializeParams) InitializeRequest {
 }
 
 // Marshal r into InitializeRequest
-func (r Request) Initialize() (v InitializeRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) Initialize() (v InitializeRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -847,8 +847,8 @@ func NewShutdownRequest(id int, params any) ShutdownRequest {
 }
 
 // Marshal r into ShutdownRequest
-func (r Request) Shutdown() (v ShutdownRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) Shutdown() (v ShutdownRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -868,8 +868,8 @@ func NewWindowShowMessageRequestRequest(id int, params ShowMessageRequestParams)
 }
 
 // Marshal r into WindowShowMessageRequestRequest
-func (r Request) WindowShowMessageRequest() (v WindowShowMessageRequestRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WindowShowMessageRequest() (v WindowShowMessageRequestRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -893,8 +893,8 @@ func NewTextDocumentWillSaveWaitUntilRequest(id int, params WillSaveTextDocument
 }
 
 // Marshal r into TextDocumentWillSaveWaitUntilRequest
-func (r Request) TextDocumentWillSaveWaitUntil() (v TextDocumentWillSaveWaitUntilRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentWillSaveWaitUntil() (v TextDocumentWillSaveWaitUntilRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -921,8 +921,8 @@ func NewTextDocumentCompletionRequest(id int, params CompletionParams) TextDocum
 }
 
 // Marshal r into TextDocumentCompletionRequest
-func (r Request) TextDocumentCompletion() (v TextDocumentCompletionRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentCompletion() (v TextDocumentCompletionRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -943,8 +943,8 @@ func NewCompletionItemResolveRequest(id int, params CompletionItem) CompletionIt
 }
 
 // Marshal r into CompletionItemResolveRequest
-func (r Request) CompletionItemResolve() (v CompletionItemResolveRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) CompletionItemResolve() (v CompletionItemResolveRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -965,8 +965,8 @@ func NewTextDocumentHoverRequest(id int, params HoverParams) TextDocumentHoverRe
 }
 
 // Marshal r into TextDocumentHoverRequest
-func (r Request) TextDocumentHover() (v TextDocumentHoverRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentHover() (v TextDocumentHoverRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -985,8 +985,8 @@ func NewTextDocumentSignatureHelpRequest(id int, params SignatureHelpParams) Tex
 }
 
 // Marshal r into TextDocumentSignatureHelpRequest
-func (r Request) TextDocumentSignatureHelp() (v TextDocumentSignatureHelpRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentSignatureHelp() (v TextDocumentSignatureHelpRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1009,8 +1009,8 @@ func NewTextDocumentDefinitionRequest(id int, params DefinitionParams) TextDocum
 }
 
 // Marshal r into TextDocumentDefinitionRequest
-func (r Request) TextDocumentDefinition() (v TextDocumentDefinitionRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDefinition() (v TextDocumentDefinitionRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1032,8 +1032,8 @@ func NewTextDocumentReferencesRequest(id int, params ReferenceParams) TextDocume
 }
 
 // Marshal r into TextDocumentReferencesRequest
-func (r Request) TextDocumentReferences() (v TextDocumentReferencesRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentReferences() (v TextDocumentReferencesRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1055,8 +1055,8 @@ func NewTextDocumentDocumentHighlightRequest(id int, params DocumentHighlightPar
 }
 
 // Marshal r into TextDocumentDocumentHighlightRequest
-func (r Request) TextDocumentDocumentHighlight() (v TextDocumentDocumentHighlightRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDocumentHighlight() (v TextDocumentDocumentHighlightRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1078,8 +1078,8 @@ func NewTextDocumentDocumentSymbolRequest(id int, params DocumentSymbolParams) T
 }
 
 // Marshal r into TextDocumentDocumentSymbolRequest
-func (r Request) TextDocumentDocumentSymbol() (v TextDocumentDocumentSymbolRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDocumentSymbol() (v TextDocumentDocumentSymbolRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1098,8 +1098,8 @@ func NewTextDocumentCodeActionRequest(id int, params CodeActionParams) TextDocum
 }
 
 // Marshal r into TextDocumentCodeActionRequest
-func (r Request) TextDocumentCodeAction() (v TextDocumentCodeActionRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentCodeAction() (v TextDocumentCodeActionRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1120,8 +1120,8 @@ func NewCodeActionResolveRequest(id int, params CodeAction) CodeActionResolveReq
 }
 
 // Marshal r into CodeActionResolveRequest
-func (r Request) CodeActionResolve() (v CodeActionResolveRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) CodeActionResolve() (v CodeActionResolveRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1148,8 +1148,8 @@ func NewWorkspaceSymbolRequest(id int, params WorkspaceSymbolParams) WorkspaceSy
 }
 
 // Marshal r into WorkspaceSymbolRequest
-func (r Request) WorkspaceSymbol() (v WorkspaceSymbolRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceSymbol() (v WorkspaceSymbolRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1171,8 +1171,8 @@ func NewWorkspaceSymbolResolveRequest(id int, params WorkspaceSymbol) WorkspaceS
 }
 
 // Marshal r into WorkspaceSymbolResolveRequest
-func (r Request) WorkspaceSymbolResolve() (v WorkspaceSymbolResolveRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceSymbolResolve() (v WorkspaceSymbolResolveRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1191,8 +1191,8 @@ func NewTextDocumentCodeLensRequest(id int, params CodeLensParams) TextDocumentC
 }
 
 // Marshal r into TextDocumentCodeLensRequest
-func (r Request) TextDocumentCodeLens() (v TextDocumentCodeLensRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentCodeLens() (v TextDocumentCodeLensRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1211,8 +1211,8 @@ func NewCodeLensResolveRequest(id int, params CodeLens) CodeLensResolveRequest {
 }
 
 // Marshal r into CodeLensResolveRequest
-func (r Request) CodeLensResolve() (v CodeLensResolveRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) CodeLensResolve() (v CodeLensResolveRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1233,8 +1233,8 @@ func NewWorkspaceCodeLensRefreshRequest(id int, params any) WorkspaceCodeLensRef
 }
 
 // Marshal r into WorkspaceCodeLensRefreshRequest
-func (r Request) WorkspaceCodeLensRefresh() (v WorkspaceCodeLensRefreshRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceCodeLensRefresh() (v WorkspaceCodeLensRefreshRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1253,8 +1253,8 @@ func NewTextDocumentDocumentLinkRequest(id int, params DocumentLinkParams) TextD
 }
 
 // Marshal r into TextDocumentDocumentLinkRequest
-func (r Request) TextDocumentDocumentLink() (v TextDocumentDocumentLinkRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentDocumentLink() (v TextDocumentDocumentLinkRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1275,8 +1275,8 @@ func NewDocumentLinkResolveRequest(id int, params DocumentLink) DocumentLinkReso
 }
 
 // Marshal r into DocumentLinkResolveRequest
-func (r Request) DocumentLinkResolve() (v DocumentLinkResolveRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) DocumentLinkResolve() (v DocumentLinkResolveRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1295,8 +1295,8 @@ func NewTextDocumentFormattingRequest(id int, params DocumentFormattingParams) T
 }
 
 // Marshal r into TextDocumentFormattingRequest
-func (r Request) TextDocumentFormatting() (v TextDocumentFormattingRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentFormatting() (v TextDocumentFormattingRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1315,8 +1315,8 @@ func NewTextDocumentRangeFormattingRequest(id int, params DocumentRangeFormattin
 }
 
 // Marshal r into TextDocumentRangeFormattingRequest
-func (r Request) TextDocumentRangeFormatting() (v TextDocumentRangeFormattingRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentRangeFormatting() (v TextDocumentRangeFormattingRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1335,8 +1335,8 @@ func NewTextDocumentOnTypeFormattingRequest(id int, params DocumentOnTypeFormatt
 }
 
 // Marshal r into TextDocumentOnTypeFormattingRequest
-func (r Request) TextDocumentOnTypeFormatting() (v TextDocumentOnTypeFormattingRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentOnTypeFormatting() (v TextDocumentOnTypeFormattingRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1355,8 +1355,8 @@ func NewTextDocumentRenameRequest(id int, params RenameParams) TextDocumentRenam
 }
 
 // Marshal r into TextDocumentRenameRequest
-func (r Request) TextDocumentRename() (v TextDocumentRenameRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentRename() (v TextDocumentRenameRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1377,8 +1377,8 @@ func NewTextDocumentPrepareRenameRequest(id int, params PrepareRenameParams) Tex
 }
 
 // Marshal r into TextDocumentPrepareRenameRequest
-func (r Request) TextDocumentPrepareRename() (v TextDocumentPrepareRenameRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) TextDocumentPrepareRename() (v TextDocumentPrepareRenameRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1398,8 +1398,8 @@ func NewWorkspaceExecuteCommandRequest(id int, params ExecuteCommandParams) Work
 }
 
 // Marshal r into WorkspaceExecuteCommandRequest
-func (r Request) WorkspaceExecuteCommand() (v WorkspaceExecuteCommandRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceExecuteCommand() (v WorkspaceExecuteCommandRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }
 
@@ -1418,7 +1418,7 @@ func NewWorkspaceApplyEditRequest(id int, params ApplyWorkspaceEditParams) Works
 }
 
 // Marshal r into WorkspaceApplyEditRequest
-func (r Request) WorkspaceApplyEdit() (v WorkspaceApplyEditRequest) {
-	json.Unmarshal(r.raw, &v)
+func (m Message) WorkspaceApplyEdit() (v WorkspaceApplyEditRequest) {
+	json.Unmarshal(m.raw, &v)
 	return
 }

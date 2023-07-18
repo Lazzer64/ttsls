@@ -139,7 +139,13 @@ type RegistrationOptions struct {
 	Name string `json:"name"`
 }
 
-type Notification struct{}
+type Notification struct {
+	Method              string           `json:"method"`
+	MessageDirection    MessageDirection `json:"messageDirection"`
+	Params              Type             `json:"params"`
+	RegistrationOptions Type             `json:"registrationOptions"`
+	Documentation       string           `json:"documentation"`
+}
 
 type Structure struct {
 	Name          string     `json:"name"`
@@ -152,6 +158,7 @@ type Structure struct {
 type Property struct {
 	Name          string `json:"name"`
 	Type          Type   `json:"type"`
+	Optional      bool   `json:"optional"`
 	Documentation string `json:"documentation"`
 }
 

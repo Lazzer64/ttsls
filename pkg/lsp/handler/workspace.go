@@ -1,39 +1,48 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/lazzer64/ttsls/pkg/lsp/client"
-	"github.com/lazzer64/ttsls/pkg/lsp/message"
-	"github.com/lazzer64/ttsls/pkg/lsp/message/types"
+	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/tts"
 )
 
-func WorkspaceExecuteCommandHandler(c client.Client, u message.UndefinedMessage) {
-	msg := u.WorkspaceExecuteCommand()
-	switch msg.Params.Command {
-	case types.TTSExecCommand:
-		if len(msg.Params.Arguments) != 1 {
-			c.InvalidParams(
-				msg.Id,
-				errors.New(fmt.Sprintf("Wrong number of arguments. Expected 1 but got %d", len(msg.Params.Arguments))),
-			)
+func WorkspaceExecuteCommandHandler(c client.Client, u protocol.Message) {
+	m := u.WorkspaceExecuteCommand()
+	args := m.Params.Arguments.([]any)
+
+	switch m.Params.Command {
+	case "tts.exec":
+		if len(args) != 1 {
+			c.Send(protocol.NewErrorResponse(
+				m.Id,
+				protocol.ErrorCodesInvalidParams,
+				fmt.Errorf("Wrong number of arguments. Expected 1 but got %d", len(args)),
+			))
 			break
 		}
 
-		if err := tts.Exec(msg.Params.Arguments[0]); err != nil {
-			c.InternalError(msg.Id, err)
+		if err := tts.Exec(fmt.Sprintf("%v", args[0])); err != nil {
+			c.Send(protocol.NewErrorResponse(
+				m.Id,
+				protocol.ErrorCodesInternalError,
+				err,
+			))
 		}
 
-	case types.TTSGetScripts:
+	case "tts.getScripts":
 		if err := tts.GetScripts(); err != nil {
-			c.InternalError(msg.Id, err)
+			c.Send(protocol.NewErrorResponse(
+				m.Id,
+				protocol.ErrorCodesInternalError,
+				err,
+			))
 		}
 
-	case types.TTSSaveAndPlayCommand:
+	case "tts.saveAndPlay":
 		states := []tts.ScriptState{}
 
 		for _, sf := range c.Files.GetAllOpen() {
@@ -41,7 +50,7 @@ func WorkspaceExecuteCommandHandler(c client.Client, u message.UndefinedMessage)
 			if len(parts) >= 3 && parts[len(parts)-1] == "ttslua" && (parts[len(parts)-2] == "-1" || len(parts[len(parts)-2]) == 6) {
 				script, err := client.Expand(c, sf)
 				if err != nil {
-					c.LogError(err.Error())
+					c.Log(protocol.MessageTypeError, err.Error())
 					continue
 				}
 				states = append(states, tts.ScriptState{
@@ -55,13 +64,17 @@ func WorkspaceExecuteCommandHandler(c client.Client, u message.UndefinedMessage)
 		err := tts.SaveAndPlay(states...)
 
 		if err != nil {
-			c.InternalError(msg.Id, err)
+			c.Log(protocol.MessageTypeError, err.Error())
 			break
 		}
 
-		c.LogInfo(fmt.Sprintf(`Saved %d script`, len(states)))
+		c.Log(protocol.MessageTypeInfo, fmt.Sprintf(`Saved %d script`, len(states)))
 
 	default:
-		c.InvalidRequest(msg.Id, errors.New("Command not recongnized"))
+		c.Send(protocol.NewErrorResponse(
+			m.Id,
+			protocol.ErrorCodesInvalidRequest,
+			fmt.Errorf("Command not recognized"),
+		))
 	}
 }

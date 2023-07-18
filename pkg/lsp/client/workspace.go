@@ -5,8 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lazzer64/ttsls/pkg/lsp/message"
-	"github.com/lazzer64/ttsls/pkg/lsp/message/types"
+	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/lua/tokens"
 	"github.com/lazzer64/ttsls/pkg/uri"
 )
@@ -47,22 +46,17 @@ func (w *fs) Change(uri uri.URI, text string) {
 
 func (w *fs) Write(uri uri.URI, text string) error {
 	if f, ok := w.managed[uri]; ok {
-		w.mw.Send(message.NewRequestMessage(
+		return w.mw.Send(protocol.NewWorkspaceApplyEditRequest(
 			rand.Int(), // TODO: replace rand.Int
-			"workspace/applyEdit",
-			map[string]any{
-				"edit": map[string]any{
-					"changes": []types.TextEdit{{
-						Range: types.Range{
-							Start: f.Start(),
-							End:   f.End(),
-						},
+			protocol.ApplyWorkspaceEditParams{
+				Edit: protocol.WorkspaceEdit{
+					Changes: []protocol.TextEdit{{
+						Range:   protocol.Range{Start: f.Start(), End: f.End()},
 						NewText: text,
 					}},
 				},
 			},
 		))
-		return nil
 	}
 	return os.WriteFile(uri.Path(), []byte(text), 0644)
 }
@@ -128,11 +122,11 @@ func (f *SourceFile) Tokens() []tokens.Token {
 	return f.tokens
 }
 
-func (f *SourceFile) Start() types.Position {
-	return types.Position{Line: 0, Character: 0}
+func (f *SourceFile) Start() protocol.Position {
+	return protocol.Position{Line: 0, Character: 0}
 }
 
-func (f *SourceFile) End() types.Position {
+func (f *SourceFile) End() protocol.Position {
 	lines := strings.Split(f.text, "\n")
-	return types.Position{Line: len(lines) + 1, Character: 0}
+	return protocol.Position{Line: uint32(len(lines) + 1), Character: 0}
 }

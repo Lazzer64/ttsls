@@ -56,7 +56,7 @@ func TextDocumentDefinitionHandler(client client.Client, u protocol.Message) {
 			}
 			if _, err := os.Stat(fname); err == nil {
 				log.Printf("LSP  Found source file at %s\n", fname)
-				client.Send(protocol.NewResponse(msg.Id, []protocol.Location{protocol.Location{
+				client.Send(protocol.NewResponse(msg.Id, []protocol.Location{{
 					Uri: protocol.DocumentUri(fmt.Sprintf("file:///%s", fname)),
 					Range: protocol.Range{
 						Start: protocol.Position{Line: 0, Character: 0},

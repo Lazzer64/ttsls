@@ -75,7 +75,7 @@ func (lsp *LSP) Serve(ctx context.Context, r io.Reader, w io.Writer) {
 	for {
 		select {
 		case msg := <-msgChan:
-			log.Printf("RECV %v\n", msg)
+			log.Printf("RECV {%d %s}\n", msg.Id, msg.Method)
 			if hand, ok := lsp.handlers[msg.Method]; ok {
 				go hand(client, msg)
 			} else if msg.Method != "" && !strings.HasPrefix(msg.Method, "$/") {

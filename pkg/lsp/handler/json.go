@@ -70,7 +70,7 @@ func (itm apiItem) Markdown() string {
 			"",
 			strings.Join(argDetails, "\n"),
 			"",
-			fmt.Sprintf("[docs](%s)", itm.Url),
+			fmt.Sprintf("more information: %s", itm.Url),
 		}, "\n")
 	}
 

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"io"
 	"math/rand"
 	"os"
 	"strings"
@@ -20,7 +21,7 @@ type Files interface {
 }
 
 type fs struct {
-	mw      MessageWriter
+	w      io.Writer
 	managed map[uri.URI]SourceFile
 }
 
@@ -46,7 +47,7 @@ func (w *fs) Change(uri uri.URI, text string) {
 
 func (w *fs) Write(uri uri.URI, text string) error {
 	if f, ok := w.managed[uri]; ok {
-		return w.mw.Send(protocol.NewWorkspaceApplyEditRequest(
+		return writeMsg(w.w, protocol.NewWorkspaceApplyEditRequest(
 			rand.Int(), // TODO: replace rand.Int
 			protocol.ApplyWorkspaceEditParams{
 				Edit: protocol.WorkspaceEdit{

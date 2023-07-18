@@ -4,8 +4,6 @@ import (
 	"context"
 	"io"
 	"log"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -57,26 +55,6 @@ func (lsp *LSP) register(m string, h handler.Handler) {
 		log.Panicf("Attempted to re-register method %s.", m)
 	}
 	lsp.handlers[m] = h
-}
-
-type includeManager struct {
-	dir string
-}
-
-func (m includeManager) WriteInclude(name string, data []byte) error {
-	path := filepath.Join(m.dir, name)
-	if filepath.IsAbs(name) {
-		path = name
-	}
-	err := os.MkdirAll(filepath.Dir(path), 0644)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(path, data, 0644)
-}
-
-func (m includeManager) ReadInclude(name string) ([]byte, error) {
-	return os.ReadFile(filepath.Join(m.dir, name))
 }
 
 func (lsp *LSP) Serve(ctx context.Context, r io.Reader, w io.Writer) {

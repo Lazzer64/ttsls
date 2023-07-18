@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/lua/tokens"
@@ -21,16 +22,19 @@ type Files interface {
 }
 
 type fs struct {
-	w      io.Writer
+	w       io.Writer
 	managed map[uri.URI]SourceFile
+	mtx     sync.Mutex
 }
 
 func (w *fs) Open(uri uri.URI, text string) {
+	w.mtx.Lock()
 	w.managed[uri] = SourceFile{
 		uri:    uri,
 		text:   text,
 		tokens: tokens.TokenizeString(text),
 	}
+	w.mtx.Unlock()
 }
 
 func (w *fs) Close(uri uri.URI) {
@@ -38,11 +42,13 @@ func (w *fs) Close(uri uri.URI) {
 }
 
 func (w *fs) Change(uri uri.URI, text string) {
+	w.mtx.Lock()
 	w.managed[uri] = SourceFile{
 		uri:    uri,
 		text:   text,
 		tokens: tokens.TokenizeString(text),
 	}
+	w.mtx.Unlock()
 }
 
 func (w *fs) Write(uri uri.URI, text string) error {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/uri"
@@ -16,7 +17,7 @@ type Client struct {
 }
 
 func New(w io.Writer) Client {
-	return Client{w, &fs{w, map[uri.URI]SourceFile{}}}
+	return Client{w, &fs{w, map[uri.URI]SourceFile{}, sync.Mutex{}}}
 }
 
 func (c Client) Send(v any) error {

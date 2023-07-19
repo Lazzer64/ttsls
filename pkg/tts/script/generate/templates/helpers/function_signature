@@ -1,0 +1,2 @@
+```lua\nfunction {{ .name }}({{ range $i, $param := .parameters }}{{ if $i }}, {{ end }}{{ $param.name }}{{- end }}) -- {{ .type }}\n```
+{{- /* remove newline */ -}}

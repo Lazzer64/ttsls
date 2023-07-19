@@ -1,0 +1,16 @@
+Definition{
+{{ "Name:  " | indent }}"{{ .name }}",
+{{ "Kind:  " | indent }}"{{ .kind }}",
+{{ "Short: " | indent }}"{{ template "function_signature" . }}",
+{{ "Long:  " | indent }}"
+{{- template "function_signature" . -}}\n
+{{- replace .description "\"" "\\\"" -}}\n
+{{- range $param := .parameters -}}
+{{ $param.name }}: {{ template "type_description" $param }}\n
+{{- end -}}
+{{- if .return_table_items -}}
+\n\nreturn table: {{ template "return_table" .return_table_items }}
+{{- end -}}
+\n\nmore: {{ .url }}",
+}
+{{- /* remove newline */ -}}

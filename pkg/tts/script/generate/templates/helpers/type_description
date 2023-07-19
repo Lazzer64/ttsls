@@ -1,0 +1,2 @@
+{{ .type }}{{ if .description }}, {{ replace .description "\"" "\\\"" }}{{ end }}
+{{- /* remove newline */ -}}

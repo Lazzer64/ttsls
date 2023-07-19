@@ -1,0 +1,6 @@
+{
+{{- range . -}}
+\n  {{ .name }}: {{ .type }}{{ if .description }}, {{ replace .description "\"" "\\\"" }}{{ end }}
+{{- end -}}
+\n}
+{{- /* remove newline */ -}}

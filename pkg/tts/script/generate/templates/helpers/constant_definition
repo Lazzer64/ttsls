@@ -1,0 +1,7 @@
+Definition{
+{{ printf "Name:  %q" .name | indent }},
+{{ printf "Kind:  %q" .kind | indent }},
+{{ printf "Short: %q" (printf "```lua\n%s -- %s\n```" .name .type) | indent }},
+{{ printf "Long:  %q" (printf "```lua\n%s -- %s\n```\n%s\n\nmore: %s" .name .type .description .url) | indent }},
+}
+{{- /* remove newline */ -}}

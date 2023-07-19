@@ -10,6 +10,7 @@ import (
 	"github.com/lazzer64/ttsls/pkg/lsp/client"
 	"github.com/lazzer64/ttsls/pkg/lsp/protocol"
 	"github.com/lazzer64/ttsls/pkg/lua/tokens"
+	"github.com/lazzer64/ttsls/pkg/tts/script"
 	"github.com/lazzer64/ttsls/pkg/uri"
 )
 
@@ -23,12 +24,17 @@ func TextDocumentDidCloseHandler(client client.Client, u protocol.Message) {
 	client.Files.Close(uri.URI(m.Params.TextDocument.Uri))
 }
 
-func TextDocumentDidChangeHandler(client client.Client, u protocol.Message) {
+func TextDocumentDidChangeHandler(c client.Client, u protocol.Message) {
 	m := u.TextDocumentDidChange()
-	for _, change := range m.Params.ContentChanges.([]struct{ Text string }) {
-		client.Files.Change(
+	changes, ok := m.Params.ContentChanges.([]any)
+	if !ok {
+		log.Printf("LSP  Could not unmarshal content changes %#v\n", m.Params.ContentChanges)
+		return
+	}
+	for _, change := range changes {
+		c.Files.Change(
 			uri.URI(m.Params.TextDocument.Uri),
-			change.Text,
+			change.(map[string]any)["text"].(string),
 		)
 	}
 }
@@ -96,9 +102,9 @@ func TextDocumentHoverHandler(client client.Client, u protocol.Message) {
 
 	for _, t := range f.Tokens() {
 		if t.Start.Line == msg.Params.Position.Line && t.Start.Character <= msg.Params.Position.Character && t.Stop.Character >= msg.Params.Position.Character {
-			for k, category := range api.Sections {
-				for _, v := range category {
-					if t.Value == v.Name {
+			for c := range script.Definitions {
+				for k, v := range script.Definitions[c] {
+					if k == t.Value {
 						client.Send(protocol.NewResponse(msg.Id, protocol.Hover{
 							Range: protocol.Range{
 								Start: protocol.Position{Character: t.Start.Character, Line: t.Start.Line},
@@ -106,28 +112,11 @@ func TextDocumentHoverHandler(client client.Client, u protocol.Message) {
 							},
 							Contents: protocol.MarkupContent{
 								Kind:  protocol.MarkupKindMarkdown,
-								Value: v.Markdown(),
+								Value: v[0].Long,
 							},
 						}))
 						return
 					}
-				}
-				if t.Value == k {
-					names := []string{}
-					for _, v := range category {
-						names = append(names, v.Short())
-					}
-					client.Send(protocol.NewResponse(msg.Id, protocol.Hover{
-						Range: protocol.Range{
-							Start: protocol.Position{Character: t.Start.Character, Line: t.Start.Line},
-							End:   protocol.Position{Character: t.Stop.Character + 1, Line: t.Stop.Line},
-						},
-						Contents: protocol.MarkupContent{
-							Kind:  protocol.MarkupKindMarkdown,
-							Value: fmt.Sprintf("%s\n```lua\n%s\n```", k, strings.Join(names, "\n")),
-						},
-					}))
-					return
 				}
 			}
 		}
@@ -142,40 +131,31 @@ func TextDocumentHoverHandler(client client.Client, u protocol.Message) {
 func TextDocumentCompletionHandler(client client.Client, u protocol.Message) {
 	msg := u.TextDocumentCompletion()
 	items := []protocol.CompletionItem{}
-
-	category := api.Sections["/"]
-	category = append(category, api.Sections["GlobalEvents"]...)
-	if !strings.HasSuffix(string(msg.Params.TextDocument.Uri), "Global.-1.ttslua") {
-		category = append(category, api.Sections["ObjectEvents"]...)
-	}
-	if msg.Params.Context.TriggerKind == protocol.CompletionTriggerKindTriggerCharacter {
-		category = api.Sections["Object"]
-	}
-
-	for _, v := range category {
-		kind := protocol.CompletionItemKindText
-		switch v.Kind {
-		case apiParameterKindClass:
-			kind = protocol.CompletionItemKindClass
-		case apiParameterKindConstant:
-			kind = protocol.CompletionItemKindConstant
-		case apiParameterKindEvent:
-			kind = protocol.CompletionItemKindEvent
-		case apiParameterKindFunction:
-			kind = protocol.CompletionItemKindFunction
-		case apiParameterKindProperty:
-			kind = protocol.CompletionItemKindProperty
+	for c := range script.Definitions {
+		for _, overloads := range script.Definitions[c] {
+			for _, v := range overloads {
+				k := protocol.CompletionItemKindConstant
+				switch v.Kind {
+				case "constant":
+					k = protocol.CompletionItemKindConstant
+				case "property":
+					k = protocol.CompletionItemKindProperty
+				case "function":
+					k = protocol.CompletionItemKindFunction
+				case "event":
+					k = protocol.CompletionItemKindEvent
+				}
+				items = append(items, protocol.CompletionItem{
+					Label: v.Name,
+					Kind:  k,
+					Documentation: protocol.MarkupContent{
+						Kind:  protocol.MarkupKindMarkdown,
+						Value: v.Long,
+					},
+				})
+			}
 		}
-		items = append(items, protocol.CompletionItem{
-			Label: v.Name,
-			Kind:  kind,
-			Documentation: protocol.MarkupContent{
-				Kind:  protocol.MarkupKindMarkdown,
-				Value: v.Markdown(),
-			},
-		})
 	}
-
 	client.Send(protocol.NewResponse(msg.Id, items))
 }
 

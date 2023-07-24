@@ -36,7 +36,7 @@ func NewLSP() *LSP {
 	lsp.register("textDocument/hover", handler.TextDocumentHoverHandler)
 	lsp.register("textDocument/completion", handler.TextDocumentCompletionHandler)
 	lsp.register("textDocument/codeAction", handler.TextDocumentCodeActionHandler)
-	lsp.register("textDocument/signatureHelp", handler.TextDocumentCodeActionHandler)
+	lsp.register("textDocument/signatureHelp", handler.TextDocumentSignatureHelpHandler)
 	lsp.register("workspace/executeCommand", handler.WorkspaceExecuteCommandHandler)
 
 	return lsp

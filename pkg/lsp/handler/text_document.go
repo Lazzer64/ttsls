@@ -159,8 +159,112 @@ func TextDocumentCompletionHandler(client client.Client, u protocol.Message) {
 	client.Send(protocol.NewResponse(msg.Id, items))
 }
 
-func TextDocumentSignatureHelpHandler(client client.Client, u protocol.Message) {
+func TextDocumentSignatureHelpHandler(c client.Client, u protocol.Message) {
+	m := u.TextDocumentSignatureHelp()
+
+	f, err := c.Files.Get(uri.URI(m.Params.TextDocument.Uri))
+	if err != nil {
+		c.Send(protocol.NewErrorResponse(
+			m.Id,
+			protocol.ErrorCodesInternalError,
+			fmt.Errorf("Could not read file %s: %w", m.Params.TextDocument.Uri, err),
+		))
+		return
+	}
+
+	tkns := f.Tokens()
+	idx := tokenIndexPre(tkns, m.Params.Position)
+
+	// naively find the name of the function being requested by looking
+	// ahead to find the number of unmatched right parens and then
+	// backtracking to find the identifier preceding the closing left
+	// paren backtrack through tokens to find function name.
+	unclosed := 0
+	for i := idx; i < len(tkns); i++ {
+		if tkns[i].Type == tokens.PAREN_L {
+			unclosed++
+		}
+		if tkns[i].Type == tokens.PAREN_R {
+			unclosed--
+		}
+		if unclosed < 0 {
+			break
+		}
+	}
+
+	if unclosed == 0 {
+		// no unclosed parens indicates the position is not within
+		// a function.
+		c.Send(protocol.NewResponse(m.Id, protocol.SignatureHelp{
+			Signatures: []protocol.SignatureInformation{},
+		}))
+		return
+	}
+
+	var t *tokens.Token
+	for i := idx; i >= 1; i-- {
+		if tkns[i].Type == tokens.PAREN_L && tkns[i-1].Type == tokens.IDENTIFIER {
+			t = &tkns[i-1]
+			break
+		}
+	}
+
+	if t == nil {
+		c.Send(protocol.NewResponse(m.Id, protocol.SignatureHelp{
+			Signatures: []protocol.SignatureInformation{},
+		}))
+		return
+	}
+
+	for category := range script.Definitions {
+		for name, overloads := range script.Definitions[category] {
+			if name == t.Value {
+				label := name
+				if category != "" {
+					label = fmt.Sprintf("%s.%s", category, name)
+				}
+				c.Send(protocol.NewResponse(m.Id, protocol.SignatureHelp{
+					ActiveSignature: 0,
+					ActiveParameter: 0,
+					Signatures: []protocol.SignatureInformation{{
+						Label: label,
+						Documentation: protocol.MarkupContent{
+							Kind:  protocol.MarkupKindMarkdown,
+							Value: overloads[0].Long,
+						},
+						Parameters:      []protocol.ParameterInformation{},
+						ActiveParameter: 0,
+					}},
+				}))
+			}
+		}
+	}
+
+	c.Send(protocol.NewResponse(m.Id, protocol.SignatureHelp{
+		Signatures: []protocol.SignatureInformation{},
+	}))
 }
 
 func TextDocumentCodeActionHandler(client client.Client, u protocol.Message) {
+}
+
+// tokenIndex returns the index of the token at position p, or -1 if none exists
+func tokenIndex(tkns []tokens.Token, p protocol.Position) int {
+	for i, t := range tkns {
+		if t.Start.Line == p.Line && t.Start.Character <= p.Character && t.Stop.Character >= p.Character {
+			return i
+		}
+	}
+	return -1
+}
+
+// tokenIndexPre returns the index of the token at or preceding position p
+func tokenIndexPre(tkns []tokens.Token, p protocol.Position) int {
+	for i := 1; i < len(tkns); i++ {
+		nxt := tkns[i]
+		if nxt.Start.Line > p.Line || (nxt.Start.Line == p.Line && nxt.Start.Character > p.Character) {
+			return i-1
+		}
+	}
+	return len(tkns)-1
 }
